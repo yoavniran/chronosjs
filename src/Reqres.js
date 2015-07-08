@@ -7,7 +7,7 @@
     /* istanbul ignore next  */
     if ("object" === typeof exports) {
         // CommonJS
-        factory(root, exports, require("./util/EventsUtil"), require("./util/CommandsUtil"));
+        factory(root, module, require("./util/EventsUtil"), require("./util/CommandsUtil"));
     }
     /* istanbul ignore next  */
     else {
@@ -17,9 +17,9 @@
          */
         // Browser globals
         root.Chronos = root.Chronos || {};
-        factory(root, root.Chronos, root.Chronos.EventsUtil, root.Chronos.CommandsUtil);
+        root.Chronos.ReqRes = factory(root, root.Chronos, root.Chronos.EventsUtil, root.Chronos.CommandsUtil, true);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, evUtil, cmdUtil, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, evUtil, cmdUtil, hide) {
     function ReqRes(defaults) {
         var appName = "ReqRes",
             attrName = "reqName",
@@ -165,7 +165,7 @@
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
-        exports.ReqRes = exports.ReqRes || ReqRes;
+        module.exports = ReqRes;
     }
     return ReqRes;
 }));
