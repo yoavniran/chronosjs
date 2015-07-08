@@ -2,7 +2,7 @@
     "use strict";
 
     /* istanbul ignore if  */
-    if ("object" === typeof exports) { //make commonjs first for systemjs
+    if ("object" === typeof exports) { //make commonjs first for systemjs (https://github.com/systemjs/systemjs/issues/572)
         // CommonJS
         factory(root, exports, require("./util/EventsUtil"));
     }

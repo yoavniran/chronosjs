@@ -1,23 +1,24 @@
 // Just a very dumb proxy wrapper to unify
 // all events mechanisms inside a single
 // channel proxy wrapper
-;(function (root, factory) {
+;
+(function (root, factory) {
     "use strict";
     /* istanbul ignore if  */
+
+    if ("object" === typeof exports) { //make commonjs first for systemjs (https://github.com/systemjs/systemjs/issues/572)
+        // CommonJS
+        factory(root, exports, require("./Events"), require("./Commands"), require("./Reqres"));
+    }
     //<amd>
-    if ("function" === typeof define && define.amd) {
+    /* istanbul ignore next  */
+    else if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres"], function (Events, Commands, Reqres) {
             return factory(root, root, Events, Commands, Reqres, true);
         });
-        return;
     }
     //</amd>
-    /* istanbul ignore next  */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, exports, require("./Events"), require("./Commands"), require("./Reqres"));
-    }
     /* istanbul ignore next  */
     else {
         /**
@@ -25,7 +26,7 @@
          * @depend ./Commands.js
          * @depend ./Reqres.js
          */
-        // Browser globals
+            // Browser globals
         root.Chronos = root.Chronos || {};
         factory(root, root.Chronos, root.Chronos.Events, root.Chronos.Commands, root.Chronos.ReqRes);
     }
@@ -34,10 +35,9 @@
 
         options = options || {};
 
-        var events = options.events || new Events();
-        var commands = options.commands || new Commands();
-        var reqres = options.reqres || new ReqRes();
-
+        var events = options.events || new Events(options);
+        var commands = options.commands || new Commands(options);
+        var reqres = options.reqres || new ReqRes(options);
 
         this.once = events.once;
         this.hasFiredEvents = events.hasFired;
@@ -55,8 +55,31 @@
         this.request = reqres.request;
         this.reply = reqres.reply;
         this.stopReplying = reqres.stopReplying;
-
     }
+
+    /**
+     *
+     * @constructor
+     */
+    function NamedChannel(name, options) {
+
+        if (typeof name !== "string") {
+            options = name;
+            name = null;
+        }
+
+        name = (name || ("ch_" + (Date.now() * Math.random())));
+
+        options = options || {};
+
+        options.events = new Events.NamedEvents("ev_" + name, options);
+        //todo: create named commands
+        //todo: create named reqres
+
+        Channels.call(this, options);
+    }
+
+    Channels.NamedChannel = NamedChannel;
 
     // attach properties to the exports object to define
     // the exported module properties.
