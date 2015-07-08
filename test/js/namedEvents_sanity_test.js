@@ -1,4 +1,4 @@
-describe('Events Sanity Tests', function () {
+describe("NamedEvents Sanity Tests", function () {
     var events;
     var Events;
 
@@ -13,27 +13,25 @@ describe('Events Sanity Tests', function () {
             require("../../src/Events")(done);
         }
     });
-    beforeEach('Init Events', function (done) {
-        events = new Events();
-        done();
+
+    beforeEach('Init Events', function () {
+        events = new Events.NamedEvents();
     });
 
-    describe("check for global scope", function () {
-        it("should not be polluted", function () {
-            expect(window.Chronos).to.be.undefined;
-        })
+    it("named events should be init", function () {
+        expect(events).to.exist;
     });
 
     describe("check cannot trigger without event name", function () {
 
         var count = 0;
         it("should not trigger the event", function () {
-            var len = events.bind('*', 'ev1', function () {
+            var len = events.bind('ev1', function () {
                 count++
             });
 
             expect(len).to.be.defined;
-            var ret = events.trigger('app1');
+            var ret = events.trigger();
             expect(ret).to.be.null;
             expect(count).to.equal(0);
 
@@ -75,7 +73,7 @@ describe('Events Sanity Tests', function () {
     describe("check valid unbind", function () {
 
         it("should unbind from event", function () {
-            var ev = events.bind('*', 'evTest', function () {
+            var ev = events.bind('evTest', function () {
             });
             var unbind = events.unbind(ev);
             expect(unbind).to.be.true;
@@ -99,51 +97,102 @@ describe('Events Sanity Tests', function () {
     describe("bind work", function () {
         var evList = [];
 
-        it("should bind to event", function () {
-
-            evList.push(events.bind('*', 'evTest', function () {
-            }));
-            evList.push(events.bind('app1', 'evTest1', function () {
-            }));
-            evList.push(events.bind('app2', 'evTest2', function () {
-            }));
-            expect(evList.length).to.equal(3);
-        });
-
-        after(function () {
+        afterEach(function () {
             unbindEvents(evList);
         });
 
+        it("should bind to event - object form", function () {
+
+            evList.push(events.bind({
+                eventName: 'evTest', func: function () {
+                }
+            }));
+
+            evList.push(events.bind({
+                eventName: 'evTest1', func: function () {
+                }
+            }));
+
+            evList.push(events.bind({
+                eventName: 'evTest2', func: function () {
+                }
+            }));
+
+            expect(evList.length).to.equal(3);
+        });
+
+        it("should bind to event - pars form", function () {
+
+            evList.push(events.bind('evTest', function () {
+            }));
+
+            evList.push(events.bind('evTest1', function () {
+            }));
+            evList.push(events.bind('evTest2', function () {
+            }));
+            expect(evList.length).to.equal(3);
+        });
     });
 
 //-----------------------------------------------------------------------------------------------------------------
-
 
     describe("trigger work", function (done) {
 
         var obj = {x: 0};
         var evList = [];
 
-        it("should trigger the event", function () {
+        beforeEach(function () {
+            obj.x = 0;
+        });
 
-            evList.push(events.bind('app1', 'evTest1', function (obj) {
-                obj.x += 1;
+        afterEach(function () {
+            unbindEvents(evList);
+        });
+
+        it("should trigger the event - object form", function () {
+
+            evList.push(events.bind({
+                eventName: "evTest1",
+                func: function (obj) {
+                    obj.x += 1;
+                }
             }));
-            evList.push(events.bind('app2', 'evTest2', function (obj) {
-                obj.x += 1;
+
+            evList.push(events.bind({
+                eventName: "evTest2",
+                func: function (obj) {
+                    obj.x += 1;
+                }
             }));
-            evList.push(events.bind('*', '*', function (obj) {
-                obj.x += 1;
+
+            evList.push(events.bind({
+                eventName: "*",
+                func: function (obj) {
+                    obj.x += 1;
+                }
             }));
-            events.trigger('app1', 'evTest1', obj);
+
+
+            events.trigger('evTest1', obj);
 
             expect(obj.x).to.equal(2);
         });
 
-        after(function () {
-            unbindEvents(evList);
-        });
+        it("should trigger the event - pars form", function () {
 
+            evList.push(events.bind('evTest1', function (obj) {
+                obj.x += 1;
+            }));
+            evList.push(events.bind('evTest2', function (obj) {
+                obj.x += 1;
+            }));
+            evList.push(events.bind('*', function (obj) {
+                obj.x += 1;
+            }));
+            events.trigger('evTest1', obj);
+
+            expect(obj.x).to.equal(2);
+        });
     });
 
 //-----------------------------------------------------------------------------------------------------------------
@@ -155,16 +204,16 @@ describe('Events Sanity Tests', function () {
 
         it("should trigger the event", function () {
 
-            evList.push(events.bind('*', 'evTest', function (obj) {
+            evList.push(events.bind('evTest', function (obj) {
                 t.y += 1;
                 obj.x += 1;
             }));
-            evList.push(events.bind('*', 'evTest1', function (obj) {
+            evList.push(events.bind('evTest1', function (obj) {
                 obj.x += 1;
             }));
 
-            events.trigger('*', 'evTest', obj);
-            events.trigger('*', 'evTest1', obj);
+            events.trigger('evTest', obj);
+            events.trigger('evTest1', obj);
             expect(obj.x).to.equal(1);
         });
 
@@ -173,15 +222,14 @@ describe('Events Sanity Tests', function () {
         });
 
     });
-
 //-----------------------------------------------------------------------------------------------------------------
 
     describe("hasFired  work for non bind functions", function () {
 
         it("should return the fired events", function () {
 
-            events.trigger('app1', 'ev1');
-            var t = events.hasFired('app1', 'ev1');
+            events.trigger('ev1');
+            var t = events.hasFired('ev1');
             expect(t.length).to.equal(1);
         });
     });
@@ -194,22 +242,22 @@ describe('Events Sanity Tests', function () {
 
         it("should return the fired events", function () {
 
-            evList.push(events.bind('*', 'evTF', function () {
+            evList.push(events.bind('evTF', function () {
             }));
-            evList.push(events.bind('appTF1', 'evTF', function () {
+            evList.push(events.bind('evTF', function () {
             }));
-            evList.push(events.bind('appTF1', '*', function () {
+            evList.push(events.bind('*', function () {
             }));
 
-            events.trigger('appTF1', 'evTF');
+            events.trigger('evTF');
 
-            var t = events.hasFired('appTF1', 'evTF');
+            var t = events.hasFired('evTF');
             expect(t.length).to.equal(1);
 
-            t = events.hasFired('*', 'evTF');
+            t = events.hasFired('evTF');
             expect(t.length).to.equal(1);
 
-            t = events.hasFired('appTF1', '*');
+            t = events.hasFired('*');
             expect(t.length).to.equal(1);
         });
 
@@ -221,16 +269,16 @@ describe('Events Sanity Tests', function () {
     describe("Two events instances hold their own data", function () {
 
         it("should not interfere with each other", function () {
-            events.bind('app1', 'ev1', function () {
+            events.bind('ev1', function () {
             });
-            events.trigger('app1', 'ev1');
+            events.trigger('ev1');
 
-            expect(events.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(events.hasFired('ev1').length).to.equal(1);
 
-            var events2 = new Events();
-            events2.bind('app1', 'ev1', function () {
+            var events2 = new Events.NamedEvents();
+            events2.bind('ev1', function () {
             });
-            expect(events2.hasFired('app1', 'ev1').length).to.equal(0);
+            expect(events2.hasFired('ev1').length).to.equal(0);
         });
 
     });
@@ -239,23 +287,45 @@ describe('Events Sanity Tests', function () {
 
         var counter = 0;
 
-        it("should only fire once", function () {
+        beforeEach(function () {
+            counter = 0;
+        });
+
+        it("should only fire once - object form", function () {
             var id = events.once({
-                appName: 'app1',
                 eventName: 'ev1',
                 func: function () {
                     counter++;
                 }
             });
-            expect(id).to.not.be.null;
-            events.trigger('app1', 'ev1');
 
-            expect(events.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(id).to.not.be.null;
+            events.trigger('ev1');
+
+            expect(events.hasFired('ev1').length).to.equal(1);
             expect(counter).to.equal(1);
 
-            events.trigger('app1', 'ev1');
+            events.trigger('ev1');
 
-            expect(events.hasFired('app1', 'ev1').length).to.equal(2);
+            expect(events.hasFired('ev1').length).to.equal(2);
+            expect(counter).to.equal(1);
+
+        });
+
+        it("should only fire once - pars form", function () {
+            var id = events.once('ev2', function () {
+                counter++;
+            });
+
+            expect(id).to.not.be.null;
+            events.trigger('ev2');
+
+            expect(events.hasFired('ev2').length).to.equal(1);
+            expect(counter).to.equal(1);
+
+            events.trigger('ev2');
+
+            expect(events.hasFired('ev2').length).to.equal(2);
             expect(counter).to.equal(1);
 
         });
@@ -280,7 +350,6 @@ describe('Events Sanity Tests', function () {
 
         it("should unbind all events by context", function () {
             events.bind({
-                appName: 'app1',
                 eventName: 'ev1',
                 func: function () {
                     counter++;
@@ -289,7 +358,6 @@ describe('Events Sanity Tests', function () {
             });
 
             events.bind({
-                appName: 'app2',
                 eventName: 'ev2',
                 func: function () {
                     counter2++;
@@ -297,46 +365,43 @@ describe('Events Sanity Tests', function () {
                 context: this
             });
 
-            events.trigger('app1', 'ev1');
-            events.trigger('app2', 'ev2');
+            events.trigger('ev1');
+            events.trigger('ev2');
 
-            expect(events.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(events.hasFired('ev1').length).to.equal(1);
             expect(counter).to.equal(1);
 
-            expect(events.hasFired('app2', 'ev2').length).to.equal(1);
+            expect(events.hasFired('ev2').length).to.equal(1);
             expect(counter2).to.equal(1);
 
             events.unbind({context: this});
 
-            events.trigger('app1', 'ev1');
-            events.trigger('app2', 'ev2');
+            events.trigger('ev1');
+            events.trigger('ev2');
 
             expect(counter).to.equal(1);
-
             expect(counter2).to.equal(1);
-
         });
     });
 
     describe("Change bufferLimit default", function () {
 
         it("should catch the change and act accordingly", function () {
-            var events2 = new Events({
+            var events2 = new Events.NamedEvents({
                 eventBufferLimit: 1
             });
+
             events2.bind({
-                appName: 'app1',
                 eventName: 'ev1',
                 func: function () {
                 }
             });
-            events2.trigger('app1', 'ev1');
 
-            expect(events2.hasFired('app1', 'ev1').length).to.equal(1);
+            events2.trigger('ev1');
 
-            events2.trigger('app1', 'ev1');
-
-            expect(events2.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(events2.hasFired( 'ev1').length).to.equal(1);
+            events2.trigger('ev1');
+            expect(events2.hasFired( 'ev1').length).to.equal(1);
         });
 
     });
@@ -348,90 +413,18 @@ describe('Events Sanity Tests', function () {
                 item: "whatever"
             };
             var innerData;
-            var events2 = new Events({
+            var events2 = new Events.NamedEvents({
                 cloneEventData: true
             });
             events2.bind({
-                appName: 'app1',
                 eventName: 'ev1',
                 func: function (data) {
                     innerData = data;
                 }
             });
-            events2.trigger('app1', 'ev1', data);
+            events2.trigger('ev1', data);
             expect(innerData).to.exist;
             expect(data).to.not.equal(innerData);
-        });
-
-    });
-
-    describe("Check not cloning data by default", function () {
-
-        it("should see that data is the same", function () {
-            var data = {
-                item: "whatever"
-            };
-            var innerData;
-            events.bind({
-                appName: 'app1',
-                eventName: 'ev1',
-                func: function (data) {
-                    innerData = data;
-                }
-            });
-            events.trigger('app1', 'ev1', data);
-            expect(innerData).to.exist;
-            expect(data).to.equal(innerData);
-        });
-
-    });
-
-    describe("Check async by trigger", function () {
-
-        it("should fire the event async", function (done) {
-            var fired = false;
-            events.bind({
-                appName: 'app1',
-                eventName: 'ev1',
-                func: function (data) {
-                    fired = true;
-                    expect(fired).to.be.true;
-                    done();
-                }
-            });
-            events.trigger({
-                appName: 'app1',
-                eventName: 'ev1',
-                data: {
-                    aSync: true
-                }
-            });
-
-            expect(fired).to.be.false;
-        });
-
-    });
-
-    describe("Check async by bind", function () {
-
-        it("should fire the event async", function (done) {
-            var fired = false;
-            events.bind({
-                appName: 'app1',
-                eventName: 'ev1',
-                aSync: true,
-                func: function (data) {
-                    fired = true;
-                    expect(fired).to.be.true;
-                    done();
-                }
-            });
-            events.trigger({
-                appName: 'app1',
-                eventName: 'ev1'
-            });
-
-            expect(fired).to.be.false;
         });
 
     });
@@ -444,7 +437,6 @@ describe('Events Sanity Tests', function () {
             var secondCalled = false;
             var thirdCalled = false;
             events.bind({
-                appName: 'app1',
                 eventName: 'ev1',
                 func: [
                     function () {
@@ -462,7 +454,6 @@ describe('Events Sanity Tests', function () {
                 ]
             });
             events.trigger({
-                appName: 'app1',
                 eventName: 'ev1'
             });
 
@@ -479,7 +470,6 @@ describe('Events Sanity Tests', function () {
         it("should return false", function () {
 
             var ret = events.unbind({
-                appName: 'app1',
                 eventName: 'ev1'
             });
 
@@ -494,10 +484,11 @@ describe('Events Sanity Tests', function () {
 
         it("should trigger the event", function () {
 
-            evList.push(events.bind('*', '*', function (obj) {
+            evList.push(events.bind('*', function (obj) {
                 obj.x += 1;
             }));
-            events.trigger('app1', 'evTest1', obj);
+
+            events.trigger('evTest1', obj);
 
             expect(obj.x).to.equal(1);
         });
@@ -512,5 +503,7 @@ describe('Events Sanity Tests', function () {
         for (var i = 0; i < evList.length; i++) {
             events.unbind(evList[i]);
         }
+
+        evList.splice(0);
     }
 });

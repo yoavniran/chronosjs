@@ -63,5 +63,8 @@
     "scripts": {
         "test": "grunt default --verbose"
     },
-    "license": "MIT"
+    "license": "MIT",
+    "jspm": {
+        "main": "Chronos.js"
+    }
 }

@@ -30,6 +30,7 @@ define("conf", function() {
         "mochaTimeout": 60000,
         "tests": [
             "../js/events_sanity_test.js",
+            "../js/namedEvents_sanity_test.js",
             "../js/commands_sanity_test.js",
             "../js/reqres_sanity_test.js",
             "../js/courier_sanity_test.js",

@@ -1,27 +1,26 @@
-;(function (root, factory) {
+(function (root, factory) {
     "use strict";
 
     /* istanbul ignore if  */
+    if ("object" === typeof exports) { //make commonjs first for systemjs
+        // CommonJS
+        factory(root, exports, require("./util/EventsUtil"));
+    }
     //<amd>
+    /* istanbul ignore next  */
     if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.Events", ["Chronos.EventsUtil"], function (EventsUtil) {
             return factory(root, root, EventsUtil, true);
         });
-        return;
     }
     //</amd>
-    /* istanbul ignore next  */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, exports, require("util/EventsUtil"));
-    }
     /* istanbul ignore next  */
     else {
         /**
          * @depend ./util/EventsUtil.js
          */
-        // Browser globals
+            // Browser globals
         root.Chronos = root.Chronos || {};
         factory(root, root.Chronos, root.Chronos.EventsUtil);
     }
@@ -44,16 +43,39 @@
 
         /**
          * This registers to an event only once, if it has fired the bind will be removed
-         * @param data
+         * @param app = {
+         *   eventName: string that is the name of the event that will be triggered like 'click'
+         *   aSync: boolean flag if this call back is called synchronously when the event fires, or after we queue all the listeners
+         *   appName: string that specifies an added identifier for multiple instances of the same event name (click by button1, click by button 2)
+         *   func: function - the callback function which the event data will be passed to
+         *   context: the context which the event data will be run with
+         *   triggerOnce: this is for listening only to the first trigger of this event
+         *   } || app = app name
+         *
+         * @param ev = event name
+         * @param fn = callback function
          * @return {*}
          */
-        function once(data) {
+        function once(app, ev, fn){
+            var data;
+
+            if ("string" === typeof app) {
+                data = {
+                    appName: app,
+                    eventName: ev,
+                    func: fn
+                };
+            }
+            else{
+                data = app;
+            }
+
             if (data) {
                 data.triggerOnce = true;
                 return bind(data);
-            } else {
-                return null;
             }
+
+            return null;
         }
 
         /**
@@ -224,7 +246,6 @@
             });
         }
 
-
         this.once = once;
         this.hasFired = hasFired;
         this.trigger = trigger;
@@ -235,10 +256,62 @@
         this.unregister = unbind;
     }
 
+    /**
+     * Makes it possible to use ChronosJS events without having to pass an appName
+     * for every method
+     * @param appName the app name to use for all events triggering and binding
+     * @constructor
+     */
+    function NamedEvents(appName, defaults) {
+
+        if (typeof appName !== "string"){
+            defaults = appName;
+            appName = null;
+        }
+
+        var events = new Events(defaults);
+
+        appName = (appName || ("ev_" + (Date.now() * Math.random())));
+
+        var inst = this;
+
+        ["unbind", "unregister"].forEach(function (fn) { //run as is, no need to touch parameters
+            inst[fn] = function () {
+                return events[fn].apply(events, arguments);
+            };
+        });
+
+        ["bind", "once", "register", //add appName either as first par or into event data object
+            "trigger", "publish"].forEach(function (fn) {
+                inst[fn] = function () {
+                    var args = Array.prototype.slice.call(arguments);
+
+                    if (typeof args[0] === "string"){
+                        args.unshift(appName);
+                    }
+                    else if (typeof args[0] !== "undefined"){
+                        args[0].appName = appName;
+                    }
+
+                    return events[fn].apply(events, args);
+                };
+            });
+
+
+        this.hasFired = function () { //add appName as first par
+            var args = Array.prototype.slice.call(arguments);
+            args.unshift(appName);
+            return events.hasFired.apply(events, args);
+        };
+    }
+
+    Events.NamedEvents = NamedEvents;
+
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
         exports.Events = exports.Events || Events;
     }
+
     return Events;
 }));
