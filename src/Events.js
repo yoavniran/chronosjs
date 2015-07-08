@@ -6,15 +6,9 @@
         // CommonJS
         factory(root, module, require("./util/EventsUtil"));
     }
-    //<amd>
-    /* istanbul ignore next  */
-    if ("function" === typeof define && define.amd) {
-        // AMD. Register as an anonymous module.
-        define("Chronos.Events", ["Chronos.EventsUtil"], function (EventsUtil) {
-            return factory(root, root, EventsUtil, true);
-        });
-    }
-    //</amd>
+
+    //removed amd support until systemjs can cope with having amd and commonjs support together - https://github.com/systemjs/systemjs/issues/574
+
     /* istanbul ignore next  */
     else {
         /**

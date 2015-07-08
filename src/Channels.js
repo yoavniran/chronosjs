@@ -10,15 +10,9 @@
         // CommonJS
         factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"));
     }
-    //<amd>
-    /* istanbul ignore next  */
-    else if ("function" === typeof define && define.amd) {
-        // AMD. Register as an anonymous module.
-        define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres"], function (Events, Commands, Reqres) {
-            return factory(root, root, Events, Commands, Reqres, true);
-        });
-    }
-    //</amd>
+
+    //removed amd support until systemjs can cope with having amd and commonjs support together - https://github.com/systemjs/systemjs/issues/574
+
     /* istanbul ignore next  */
     else {
         /**
