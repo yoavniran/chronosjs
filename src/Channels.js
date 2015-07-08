@@ -8,7 +8,7 @@
 
     if ("object" === typeof exports) { //make commonjs first for systemjs (https://github.com/systemjs/systemjs/issues/572)
         // CommonJS
-        factory(root, exports, require("./Events"), require("./Commands"), require("./Reqres"));
+        factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"));
     }
     //<amd>
     /* istanbul ignore next  */
@@ -28,9 +28,9 @@
          */
             // Browser globals
         root.Chronos = root.Chronos || {};
-        factory(root, root.Chronos, root.Chronos.Events, root.Chronos.Commands, root.Chronos.ReqRes);
+        root.Chronos.Channels - factory(root, root.Chronos, root.Chronos.Events, root.Chronos.Commands, root.Chronos.ReqRes, true);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, Events, Commands, ReqRes, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, Events, Commands, ReqRes, hide) {
     function Channels(options) {
 
         options = options || {};
@@ -84,7 +84,7 @@
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
-        exports.Channels = exports.Channels || Channels;
+        module.exports = Channels;
     }
     return Channels;
 }));

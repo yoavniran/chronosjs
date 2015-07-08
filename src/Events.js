@@ -4,7 +4,7 @@
     /* istanbul ignore if  */
     if ("object" === typeof exports) { //make commonjs first for systemjs (https://github.com/systemjs/systemjs/issues/572)
         // CommonJS
-        factory(root, exports, require("./util/EventsUtil"));
+        factory(root, module, require("./util/EventsUtil"));
     }
     //<amd>
     /* istanbul ignore next  */
@@ -22,7 +22,7 @@
          */
             // Browser globals
         root.Chronos = root.Chronos || {};
-        factory(root, root.Chronos, root.Chronos.EventsUtil);
+        root.Chronos.Events = factory(root, root.Chronos, root.Chronos.EventsUtil, true);
     }
 }(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, evUtil, hide) {
     "use strict";
@@ -56,7 +56,7 @@
          * @param fn = callback function
          * @return {*}
          */
-        function once(app, ev, fn){
+        function once(app, ev, fn) {
             var data;
 
             if ("string" === typeof app) {
@@ -66,7 +66,7 @@
                     func: fn
                 };
             }
-            else{
+            else {
                 data = app;
             }
 
@@ -264,7 +264,7 @@
      */
     function NamedEvents(appName, defaults) {
 
-        if (typeof appName !== "string"){
+        if (typeof appName !== "string") {
             defaults = appName;
             appName = null;
         }
@@ -286,10 +286,10 @@
                 inst[fn] = function () {
                     var args = Array.prototype.slice.call(arguments);
 
-                    if (typeof args[0] === "string"){
+                    if (typeof args[0] === "string") {
                         args.unshift(appName);
                     }
-                    else if (typeof args[0] !== "undefined"){
+                    else if (typeof args[0] !== "undefined") {
                         args[0].appName = appName;
                     }
 
@@ -310,7 +310,7 @@
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
-        exports.Events = exports.Events || Events;
+        module.exports = Events;
     }
 
     return Events;
