@@ -1,28 +1,26 @@
 ;(function (root, factory) {
     "use strict";
-
     /* istanbul ignore if */
+    if ("object" === typeof exports) {
+        // CommonJS
+        factory(root, module);
+    }
     //<amd>
-    if ("function" === typeof define && define.amd) {
+    /* istanbul ignore next */
+    else if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.EventsUtil", [], function () {
             return factory(root, root, true);
         });
-        return;
     }
     //</amd>
-    /* istanbul ignore next */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, exports);
-    }
     /* istanbul ignore next  */
     else {
         // Browser globals
         root.Chronos = root.Chronos || {};
-        factory(root, root.Chronos);
+        root.Chronos.EventsUtil = factory(root, root.Chronos, true);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, hide) {
     "use strict";
 
     function getListeners(lstnrs, eventName, appName) {
@@ -257,8 +255,10 @@
         cloneEventData: cloneEventData,
         storeEventData: storeEventData
     };
+
     if (!hide) {
-        exports.EventsUtil = exports.EventsUtil || ret;
+        module.exports = ret;
     }
+
     return ret;
 }));

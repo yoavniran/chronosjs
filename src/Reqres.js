@@ -2,13 +2,19 @@
     "use strict";
 
     /* istanbul ignore if  */
-    //removed amd support until systemjs can cope with having amd and commonjs support together - https://github.com/systemjs/systemjs/issues/574
-
-    /* istanbul ignore next  */
     if ("object" === typeof exports) {
         // CommonJS
         factory(root, module, require("./util/EventsUtil"), require("./util/CommandsUtil"));
     }
+    //<amd>
+    /* istanbul ignore next  */
+    else if ("function" === typeof define && define.amd) {
+        // AMD. Register as an anonymous module.
+        define("Chronos.Reqres", ["Chronos.EventsUtil", "Chronos.CommandsUtil"], function (EventsUtil, CommandsUtil) {
+            return factory(root, root, EventsUtil, CommandsUtil, true);
+        });
+    }
+    //</amd>
     /* istanbul ignore next  */
     else {
         /**

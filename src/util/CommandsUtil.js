@@ -1,22 +1,19 @@
 ;(function (root, factory) {
     "use strict";
-
     /* istanbul ignore if */
+    if ("object" === typeof exports) {
+        // CommonJS
+        factory(root, module, require("./EventsUtil"));
+    }
     //<amd>
-    if ("function" === typeof define && define.amd) {
+    /* istanbul ignore next */
+    else if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.CommandsUtil", ["Chronos.EventsUtil"], function (EventsUtil) {
             return factory(root, root, EventsUtil, true);
-
         });
-        return;
     }
     //</amd>
-    /* istanbul ignore next */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, exports, require("util/EventsUtil"));
-    }
     /* istanbul ignore next  */
     else {
         /**
@@ -24,7 +21,7 @@
          */
             // Browser globals
         root.Chronos = root.Chronos || {};
-        factory(root, root.Chronos, root.Chronos.EventsUtil);
+        root.Chronos.CommandsUtil = factory(root, root.Chronos, root.Chronos.EventsUtil, true);
     }
 }(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, evUtil, hide) {
     "use strict";
@@ -74,8 +71,9 @@
         bind: bind,
         valid: valid
     };
+
     if (!hide) {
-        exports.CommandsUtil = exports.CommandsUtil || ret;
+        module.exports = ret;
     }
     return ret;
 }));

@@ -1,18 +1,22 @@
 // Just a very dumb proxy wrapper to unify
 // all events mechanisms inside a single
 // channel proxy wrapper
-;
-(function (root, factory) {
+;(function (root, factory) {
     "use strict";
     /* istanbul ignore if  */
-
-    if ("object" === typeof exports) { //make commonjs first for systemjs (https://github.com/systemjs/systemjs/issues/572)
+    if ("object" === typeof exports) {
         // CommonJS
         factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"));
     }
-
-    //removed amd support until systemjs can cope with having amd and commonjs support together - https://github.com/systemjs/systemjs/issues/574
-
+    //<amd>
+    /* istanbul ignore next  */
+    else if ("function" === typeof define && define.amd) {
+        // AMD. Register as an anonymous module.
+        define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres"], function (Events, Commands, Reqres) {
+            return factory(root, root, Events, Commands, Reqres, true);
+        });
+    }
+    //</amd>
     /* istanbul ignore next  */
     else {
         /**
