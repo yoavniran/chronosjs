@@ -26,7 +26,7 @@
          */
             // Browser globals
         root.Chronos = root.Chronos || {};
-        root.Chronos.Channels - factory(root, root.Chronos, root.Chronos.Events, root.Chronos.Commands, root.Chronos.ReqRes, true);
+        root.Chronos.Channels = factory(root, root.Chronos, root.Chronos.Events, root.Chronos.Commands, root.Chronos.ReqRes, true);
     }
 }(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, Events, Commands, ReqRes, hide) {
     function Channels(options) {
