@@ -192,7 +192,9 @@
 
         this.hasFired = function () { //add appName as first par
             var args = Array.prototype.slice.call(arguments);
-            args.unshift(appName);
+            if (args.length === 1) {
+                args.unshift(appName);
+            }
             return commands.hasFired.apply(commands, args);
         };
     }

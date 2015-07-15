@@ -290,7 +290,7 @@
                         args.unshift(appName);
                     }
                     else if (typeof args[0] !== "undefined") {
-                        args[0].appName = appName;
+                        args[0].appName = args[0].appName || appName; //if provided dont override
                     }
 
                     return events[fn].apply(events, args);
@@ -300,7 +300,9 @@
 
         this.hasFired = function () { //add appName as first par
             var args = Array.prototype.slice.call(arguments);
-            args.unshift(appName);
+            if (args.length === 1) {
+                args.unshift(appName);
+            }
             return events.hasFired.apply(events, args);
         };
     }

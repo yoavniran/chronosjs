@@ -313,19 +313,22 @@ describe("NamedEvents Sanity Tests", function () {
         });
 
         it("should only fire once - pars form", function () {
-            var id = events.once('ev2', function () {
+
+            var events2 = new Events.NamedEvents("ev111");
+
+            var id = events2.once('ev2', function () {
                 counter++;
             });
 
             expect(id).to.not.be.null;
-            events.trigger('ev2');
+            events2.trigger('ev2');
 
-            expect(events.hasFired('ev2').length).to.equal(1);
+            expect(events2.hasFired('ev111', 'ev2').length).to.equal(1);
             expect(counter).to.equal(1);
 
-            events.trigger('ev2');
+            events2.trigger('ev2');
 
-            expect(events.hasFired('ev2').length).to.equal(2);
+            expect(events2.hasFired('ev2').length).to.equal(2);
             expect(counter).to.equal(1);
 
         });
