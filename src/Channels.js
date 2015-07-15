@@ -72,7 +72,7 @@
 
         options.events = new Events.NamedEvents("ev_" + name, options.eventsOptions || options);
         options.commands = new Commands.NamedCommands("cm_" + name, options.commandsOptions || options);
-        options.reqres = new ReqRes.NamedEvents("rr_" + name, options.reqresOptions || options);
+        options.reqres = new ReqRes.NamedReqRes("rr_" + name, options.reqresOptions || options);
 
         Channels.call(this, options);
     }
