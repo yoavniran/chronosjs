@@ -1,19 +1,19 @@
 ;(function (root, factory) {
     "use strict";
     /* istanbul ignore if */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, module, require("./EventsUtil"));
-    }
     //<amd>
-    /* istanbul ignore next */
-    else if ("function" === typeof define && define.amd) {
+    if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.CommandsUtil", ["Chronos.EventsUtil"], function (EventsUtil) {
             return factory(root, root, EventsUtil, true);
         });
     }
     //</amd>
+    /* istanbul ignore next */
+    else if ("object" === typeof exports) {
+        // CommonJS
+        factory(root, module, require("./EventsUtil"));
+    }
     /* istanbul ignore next  */
     else {
         /**

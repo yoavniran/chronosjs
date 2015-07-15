@@ -2,19 +2,19 @@
     "use strict";
 
     /* istanbul ignore if  */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, module, require("./util/EventsUtil"), require("./util/CommandsUtil"));
-    }
     //<amd>
-    /* istanbul ignore next  */
-    else if ("function" === typeof define && define.amd) {
+    if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.Commands", ["Chronos.EventsUtil", "Chronos.CommandsUtil"], function (EventsUtil, CommandsUtil) {
             return factory(root, root, EventsUtil, CommandsUtil, true);
         });
     }
     //</amd>
+    /* istanbul ignore next  */
+    else if ("object" === typeof exports) {
+        // CommonJS
+        factory(root, module, require("./util/EventsUtil"), require("./util/CommandsUtil"));
+    }
     /* istanbul ignore next  */
     else {
         /**
@@ -167,6 +167,37 @@
         this.stopComplying = stopComplying;
         this.command = command;
     }
+
+    function NamedCommands(appName, defaults){
+
+        if (typeof appName !== "string") {
+            defaults = appName;
+            appName = null;
+        }
+
+        var commands = new Commands(defaults),
+            inst = this;
+
+        appName = (appName || evUtil.getId("cm"));
+
+        ["comply", "command", "stopComplying"].forEach(function(fn){
+            inst[fn] = function(){
+                if (arguments[0]){
+                    arguments[0].appName = arguments[0].appName || appName; //if appName provided, dont override
+                }
+
+                return commands[fn].apply(commands, arguments);
+            };
+        });
+
+        this.hasFired = function () { //add appName as first par
+            var args = Array.prototype.slice.call(arguments);
+            args.unshift(appName);
+            return commands.hasFired.apply(commands, args);
+        };
+    }
+
+    Commands.NamedCommands = NamedCommands;
 
     // attach properties to the exports object to define
     // the exported module properties.

@@ -1,20 +1,20 @@
-(function (root, factory) {
+;(function (root, factory) {
     "use strict";
 
     /* istanbul ignore if  */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, module, require("./util/EventsUtil"));
-    }
     //<amd>
-    /* istanbul ignore next  */
-    else if ("function" === typeof define && define.amd) {
+    if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.Events", ["Chronos.EventsUtil"], function (EventsUtil) {
             return factory(root, root, EventsUtil, true);
         });
     }
     //</amd>
+    /* istanbul ignore next  */
+    else if ("object" === typeof exports) {
+        // CommonJS
+        factory(root, module, require("./util/EventsUtil"));
+    }
     /* istanbul ignore next  */
     else {
         /**
@@ -252,6 +252,7 @@
         this.publish = trigger;
         this.bind = bind;
         this.register = bind;
+        this.on = bind;
         this.unbind = unbind;
         this.unregister = unbind;
     }
@@ -269,11 +270,10 @@
             appName = null;
         }
 
-        var events = new Events(defaults);
+        var events = new Events(defaults),
+            inst = this;
 
-        appName = (appName || ("ev_" + (Date.now() * Math.random())));
-
-        var inst = this;
+        appName = (appName || evUtil.getId("ev"));
 
         ["unbind", "unregister"].forEach(function (fn) { //run as is, no need to touch parameters
             inst[fn] = function () {
@@ -282,7 +282,7 @@
         });
 
         ["bind", "once", "register", //add appName either as first par or into event data object
-            "trigger", "publish"].forEach(function (fn) {
+            "on", "trigger", "publish"].forEach(function (fn) {
                 inst[fn] = function () {
                     var args = Array.prototype.slice.call(arguments);
 

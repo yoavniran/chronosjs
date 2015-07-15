@@ -1,19 +1,19 @@
 ;(function (root, factory) {
     "use strict";
     /* istanbul ignore if */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, module);
-    }
     //<amd>
-    /* istanbul ignore next */
-    else if ("function" === typeof define && define.amd) {
+    if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
         define("Chronos.EventsUtil", [], function () {
             return factory(root, root, true);
         });
     }
     //</amd>
+    /* istanbul ignore next */
+    else if ("object" === typeof exports) {
+        // CommonJS
+        factory(root, module);
+    }
     /* istanbul ignore next  */
     else {
         // Browser globals
@@ -22,6 +22,8 @@
     }
 }(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, hide) {
     "use strict";
+
+    var _idCounter = 1;
 
     function getListeners(lstnrs, eventName, appName) {
         var callBacks = [];
@@ -183,6 +185,10 @@
         data = null;
     }
 
+    function getId(prefix){
+        return prefix + "_" + (_idCounter++);
+    }
+
     function _unregister(lstnrs, eventId) {
         var unBound = false;
         if (!eventId) {
@@ -253,7 +259,8 @@
         unbind: unbind,
         hasFired: hasFired,
         cloneEventData: cloneEventData,
-        storeEventData: storeEventData
+        storeEventData: storeEventData,
+        getId: getId
     };
 
     if (!hide) {

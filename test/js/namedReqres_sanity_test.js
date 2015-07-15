@@ -1,4 +1,4 @@
-describe('ReqRes Sanity Tests', function () {
+describe('Named ReqRes Sanity Tests', function () {
     var reqres;
     var ReqRes;
 
@@ -14,9 +14,10 @@ describe('ReqRes Sanity Tests', function () {
         }
     });
     beforeEach('Init ReqRes', function (done) {
-        reqres = new ReqRes();
+        reqres = new ReqRes.NamedReqRes();
         done();
     });
+
     describe("check for global scope", function () {
         it("should not be polluted", function() {
             expect(window.Chronos).to.be.undefined;
@@ -27,7 +28,6 @@ describe('ReqRes Sanity Tests', function () {
         var res;
         it("should respond with 1", function () {
             var cmdId = reqres.reply({
-                appName: 'app',
                 reqName: 'get',
                 func: function () {
                     return 1;
@@ -35,7 +35,6 @@ describe('ReqRes Sanity Tests', function () {
             });
 
             res = reqres.request({
-                appName: 'app',
                 reqName: 'get',
                 data: {}
             });
@@ -48,7 +47,6 @@ describe('ReqRes Sanity Tests', function () {
 
         it("not accept a second reply", function () {
             var cmdId = reqres.reply({
-                appName: 'app',
                 reqName: 'get',
                 func: function () {
                     return 1;
@@ -56,7 +54,6 @@ describe('ReqRes Sanity Tests', function () {
             });
 
             var cmdId2 = reqres.reply({
-                appName: 'app',
                 reqName: 'get',
                 func: function () {
                     return 1;
@@ -75,25 +72,22 @@ describe('ReqRes Sanity Tests', function () {
             }
 
             var reqId = reqres.reply({
-                appName: 'app',
                 reqName: 'get',
                 func: callback
             });
 
             var res = reqres.request({
-                appName: 'app',
                 reqName: 'get',
                 data: {}
             });
 
             expect(res).to.equal(1);
 
-            var stopRes = reqres.stopReplying({appName: "app", reqName: "get"});
+            var stopRes = reqres.stopReplying({reqName: "get"});
 
             expect(stopRes).to.be.true;
 
             res = reqres.request({
-                appName: 'app',
                 reqName: 'get',
                 data: {}
             });
@@ -110,13 +104,11 @@ describe('ReqRes Sanity Tests', function () {
             }
 
             var reqId = reqres.reply({
-                appName: 'app',
                 reqName: 'get',
                 func: callback
             });
 
             var res = reqres.request({
-                appName: 'app',
                 reqName: 'get',
                 data: {}
             });
@@ -128,7 +120,6 @@ describe('ReqRes Sanity Tests', function () {
             expect(stopRes).to.be.true;
 
             res = reqres.request({
-                appName: 'app',
                 reqName: 'get',
                 data: {}
             });
@@ -141,7 +132,6 @@ describe('ReqRes Sanity Tests', function () {
 
         it("should return undefined", function () {
             var res = reqres.request({
-                appName: 'app',
                 reqName: 'get',
                 data: {}
             });
@@ -155,7 +145,6 @@ describe('ReqRes Sanity Tests', function () {
         it("should throw an error", function () {
             function fn() {
                 reqres.request({
-                    appName: 'app',
                     reqName: '*',
                     data: {}
                 });
@@ -182,9 +171,8 @@ describe('ReqRes Sanity Tests', function () {
 
     describe("check reply different app name than request", function(){
 
-        it("should not reply", function(){
+        it("should reply", function(){
             var reqId = reqres.reply({
-                appName: 'app',
                 reqName: 'get',
                 func: function(){return "foo";}
             });
@@ -216,7 +204,6 @@ describe('ReqRes Sanity Tests', function () {
 
         it("should throw an error", function () {
             var res = reqres.reply({
-                appName: 'sdgd',
                 reqName: '*',
                 data: {}
             });
@@ -228,21 +215,23 @@ describe('ReqRes Sanity Tests', function () {
     describe("Two reqres instances hold their own data", function () {
 
         it("should hold different events", function () {
-            reqres.reply({
-                appName: 'app1',
+
+            var reqres1 = new ReqRes.NamedReqRes("rr111");
+
+            reqres1.reply({
                 reqName: 'ev1',
                 func: function () {
                 }
             });
-            reqres.request({
-                appName: 'app1',
+            reqres1.request({
+                appName: "rr111",
                 reqName: 'ev1'
             });
 
-            expect(reqres.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(reqres1.hasFired('ev1').length).to.equal(1);
 
-            var reqres2 = new ReqRes();
-            expect(reqres2.hasFired('app1', 'ev1').length).to.equal(0);
+            var reqres2 = new ReqRes.NamedReqRes("rr222");
+            expect(reqres2.hasFired('ev1').length).to.equal(0);
         });
     });
 
@@ -250,7 +239,6 @@ describe('ReqRes Sanity Tests', function () {
 
         it("should return and call the callback", function (done) {
             reqres.reply({
-                appName: 'app1',
                 reqName: 'ev1',
                 func: function (data, cb) {
                     setTimeout(function() {
@@ -260,14 +248,13 @@ describe('ReqRes Sanity Tests', function () {
                 }
             });
             var res = reqres.request({
-                appName: 'app1',
                 reqName: 'ev1'
             }, function (result) {
                 expect(result).to.equal(2);
                 done();
             });
 
-            expect(reqres.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(reqres.hasFired('ev1').length).to.equal(1);
 
             expect(res).to.equal(1);
         });
@@ -276,21 +263,20 @@ describe('ReqRes Sanity Tests', function () {
     describe("Change bufferLimit default", function () {
 
         it("should catch the change and act accordingly", function () {
-            var reqres2 = new ReqRes({
+            var reqres2 = new ReqRes.NamedReqRes({
                 eventBufferLimit: 1
             });
             reqres2.reply({
-                appName: 'app1',
                 reqName: 'ev1',
                 func: function () {}
             });
-            reqres2.request({appName: 'app1', reqName: 'ev1'});
+            reqres2.request({reqName: 'ev1'});
 
-            expect(reqres2.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(reqres2.hasFired('ev1').length).to.equal(1);
 
-            reqres2.request({appName: 'app1', reqName: 'ev1'});
+            reqres2.request({reqName: 'ev1'});
 
-            expect(reqres2.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(reqres2.hasFired('ev1').length).to.equal(1);
         });
 
     });
@@ -302,17 +288,16 @@ describe('ReqRes Sanity Tests', function () {
                 item: "whatever"
             };
             var innerData;
-            var reqres2 = new ReqRes({
+            var reqres2 = new ReqRes.NamedReqRes({
                 cloneEventData: true
             });
             reqres2.reply({
-                appName: 'app1',
                 reqName: 'ev1',
                 func: function (data) {
                     innerData = data;
                 }
             });
-            reqres2.request({appName: 'app1', reqName: 'ev1', data: data});
+            reqres2.request({reqName: 'ev1', data: data});
 
             expect(innerData).to.exist;
             expect(data).to.not.equal(innerData);
@@ -328,13 +313,12 @@ describe('ReqRes Sanity Tests', function () {
             };
             var innerData;
             reqres.reply({
-                appName: 'app1',
                 reqName: 'ev1',
                 func: function (data) {
                     innerData = data;
                 }
             });
-            reqres.request({appName: 'app1', reqName: 'ev1', data: data});
+            reqres.request({reqName: 'ev1', data: data});
 
             expect(innerData).to.exist;
             expect(data).to.equal(innerData);
@@ -350,7 +334,6 @@ describe('ReqRes Sanity Tests', function () {
         it("should work, despite  failure in registered function", function () {
 
             reqres.reply({
-                appName: "app",
                 reqName: 'reqTest',
                 func: function () {
                     throw new Error('Force error');
@@ -359,7 +342,6 @@ describe('ReqRes Sanity Tests', function () {
             });
 
             var res = reqres.request({
-                appName: "app",
                 reqName: 'reqTest'
             });
             expect(counter).to.equal(0);
@@ -377,7 +359,6 @@ describe('ReqRes Sanity Tests', function () {
                 item: "whatever"
             };
             var id = reqres.reply({
-                appName: 'app1',
                 reqName: 'ev1',
                 func: function (data) {
                     throw new Error("YES!");
@@ -386,7 +367,7 @@ describe('ReqRes Sanity Tests', function () {
 
             expect(id).to.exist;
 
-            var res = reqres.request({appName: 'app1', reqName: 'ev1', data: data}, function (err, data) {
+            var res = reqres.request({ reqName: 'ev1', data: data}, function (err, data) {
                 called = true;
                 expect(data).to.be.undefined;
                 expect(err).to.exist;
@@ -408,7 +389,6 @@ describe('ReqRes Sanity Tests', function () {
                 item: "whatever"
             };
             var id = reqres.reply({
-                appName: 'app1',
                 reqName: 'ev1',
                 func: function (data) {
                     throw new Error("YES!");
@@ -417,7 +397,7 @@ describe('ReqRes Sanity Tests', function () {
 
             expect(id).to.exist;
 
-            var res = reqres.request({appName: 'app1', reqName: 'ev1', data: data}, function (err, data) {
+            var res = reqres.request({ reqName: 'ev1', data: data}, function (err, data) {
                 called = true;
                 expect(data).to.be.undefined;
                 expect(err).to.exist;

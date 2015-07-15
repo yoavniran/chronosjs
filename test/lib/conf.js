@@ -32,7 +32,9 @@ define("conf", function() {
             "../js/events_sanity_test.js",
             "../js/namedEvents_sanity_test.js",
             "../js/commands_sanity_test.js",
+            "../js/namedCommands_sanity_test.js",
             "../js/reqres_sanity_test.js",
+            "../js/namedReqres_sanity_test.js",
             "../js/courier_sanity_test.js",
             "../js/courier_sanity_no_iframe_test.js"
         ]

@@ -1,4 +1,4 @@
-describe('Commands Sanity Tests', function () {
+describe('Named Commands Sanity Tests', function () {
     var commands;
     var Commands;
 
@@ -14,7 +14,7 @@ describe('Commands Sanity Tests', function () {
         }
     });
     beforeEach('Init ReqRes', function (done) {
-        commands = new Commands();
+        commands = new Commands.NamedCommands();
         done();
     });
     describe("check for global scope", function () {
@@ -27,7 +27,6 @@ describe('Commands Sanity Tests', function () {
         var res;
         it("should respond with 1", function () {
             var cmdId = commands.comply({
-                appName: 'app',
                 cmdName: 'get',
                 func: function () {
                     return 1;
@@ -35,7 +34,6 @@ describe('Commands Sanity Tests', function () {
             });
 
             res = commands.command({
-                appName: 'app',
                 cmdName: 'get',
                 data: {}
             });
@@ -48,7 +46,6 @@ describe('Commands Sanity Tests', function () {
 
         it("not accept a second comply", function () {
             var cmdId = commands.comply({
-                appName: 'app',
                 cmdName: 'get',
                 func: function () {
                     return 1;
@@ -56,7 +53,6 @@ describe('Commands Sanity Tests', function () {
             });
 
             var cmdId2 = commands.comply({
-                appName: 'app',
                 cmdName: 'get',
                 func: function () {
                     return 1;
@@ -75,13 +71,11 @@ describe('Commands Sanity Tests', function () {
             }
 
             var reqId = commands.comply({
-                appName: 'app',
                 cmdName: 'get',
                 func: callback
             });
 
             var res = commands.command({
-                appName: 'app',
                 cmdName: 'get',
                 data: {}
             });
@@ -93,7 +87,6 @@ describe('Commands Sanity Tests', function () {
             expect(stopRes).to.be.true;
 
             res = commands.command({
-                appName: 'app',
                 cmdName: 'get',
                 data: {}
             });
@@ -106,7 +99,6 @@ describe('Commands Sanity Tests', function () {
 
         it("should return undefined", function () {
             var res = commands.command({
-                appName: 'app',
                 cmdName: 'get',
                 data: {}
             });
@@ -120,7 +112,6 @@ describe('Commands Sanity Tests', function () {
         it("should throw an error", function () {
 
             var res = commands.command({
-                appName: 'app',
                 cmdName: '*',
                 data: {}
             });
@@ -160,7 +151,6 @@ describe('Commands Sanity Tests', function () {
 
         it("should throw an error", function () {
             var res = commands.comply({
-                appName: 'sdgd',
                 cmdName: '*',
                 data: {}
             });
@@ -172,21 +162,23 @@ describe('Commands Sanity Tests', function () {
     describe("Two commands instances hold their own data", function () {
 
         it("should hold different events", function () {
-            commands.comply({
-                appName: 'app1',
+
+            var commands1 = new Commands.NamedCommands("cm111");
+
+            commands1.comply({
                 cmdName: 'ev1',
                 func: function () {
                 }
             });
-            commands.command({
-                appName: 'app1',
+            commands1.command({
+                appName: 'cm111',
                 cmdName: 'ev1'
             });
 
-            expect(commands.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(commands1.hasFired('ev1').length).to.equal(1);
 
-            var commands2 = new Commands();
-            expect(commands2.hasFired('app1', 'ev1').length).to.equal(0);
+            var commands2 = new Commands.NamedCommands("cm222");
+            expect(commands2.hasFired('ev1').length).to.equal(0);
         });
 
     });
@@ -195,7 +187,6 @@ describe('Commands Sanity Tests', function () {
 
         it("should hold different events", function (done) {
             commands.comply({
-                appName: 'app1',
                 cmdName: 'ev1',
                 func: function (data, cb) {
                     setTimeout(function() {
@@ -205,14 +196,13 @@ describe('Commands Sanity Tests', function () {
                 }
             });
             var res = commands.command({
-                appName: 'app1',
                 cmdName: 'ev1'
             }, function () {
                 expect(true).to.be.ok;
                 done();
             });
 
-            expect(commands.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(commands.hasFired('ev1').length).to.equal(1);
 
             expect(res).to.be.true;
         });
@@ -221,23 +211,21 @@ describe('Commands Sanity Tests', function () {
     describe("Change bufferLimit default", function () {
 
         it("should catch the change and act accordingly", function () {
-            var commands2 = new Commands({
+            var commands2 = new Commands.NamedCommands({
                 eventBufferLimit: 1
             });
             commands2.comply({
-                appName: 'app1',
                 cmdName: 'ev1',
                 func: function () {}
             });
-            commands2.command({appName: 'app1', cmdName: 'ev1'});
+            commands2.command({cmdName: 'ev1'});
 
-            expect(commands2.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(commands2.hasFired('ev1').length).to.equal(1);
 
-            commands2.command({appName: 'app1', cmdName: 'ev1'});
+            commands2.command({cmdName: 'ev1'});
 
-            expect(commands2.hasFired('app1', 'ev1').length).to.equal(1);
+            expect(commands2.hasFired( 'ev1').length).to.equal(1);
         });
-
     });
 
     describe("Change cloneEventData default", function () {
@@ -251,13 +239,12 @@ describe('Commands Sanity Tests', function () {
                 cloneEventData: true
             });
             commands2.comply({
-                appName: 'app1',
                 cmdName: 'ev1',
                 func: function (data) {
                     innerData = data;
                 }
             });
-            commands2.command({appName: 'app1', cmdName: 'ev1', data: data});
+            commands2.command({cmdName: 'ev1', data: data});
 
             expect(innerData).to.exist;
             expect(data).to.not.equal(innerData);
@@ -273,13 +260,12 @@ describe('Commands Sanity Tests', function () {
             };
             var innerData;
             commands.comply({
-                appName: 'app1',
                 cmdName: 'ev1',
                 func: function (data) {
                     innerData = data;
                 }
             });
-            commands.command({appName: 'app1', cmdName: 'ev1', data: data});
+            commands.command({ cmdName: 'ev1', data: data});
 
             expect(innerData).to.exist;
             expect(data).to.equal(innerData);
@@ -294,7 +280,6 @@ describe('Commands Sanity Tests', function () {
         it("should work, despite  failure in registered function", function () {
 
             commands.comply({
-                appName: "app",
                 cmdName: 'cmdTest',
                 func: function () {
                     throw new Error('Force error');
@@ -303,7 +288,6 @@ describe('Commands Sanity Tests', function () {
             });
 
             var res = commands.command({
-                appName: "app",
                 cmdName: 'cmdTest'
             });
             expect(counter).to.equal(0);
@@ -321,7 +305,6 @@ describe('Commands Sanity Tests', function () {
                 item: "whatever"
             };
             var id = commands.comply({
-                appName: 'app1',
                 cmdName: 'ev1',
                 func: function (data) {
                     throw new Error("YES!");
@@ -330,7 +313,7 @@ describe('Commands Sanity Tests', function () {
 
             expect(id).to.exist;
 
-            var res = commands.command({appName: 'app1', cmdName: 'ev1', data: data}, function (err) {
+            var res = commands.command({cmdName: 'ev1', data: data}, function (err) {
                 called = true;
                 expect(err).to.exist;
                 expect(err.message).to.equal("YES!");
@@ -351,7 +334,6 @@ describe('Commands Sanity Tests', function () {
                 item: "whatever"
             };
             var id = commands.comply({
-                appName: 'app1',
                 cmdName: 'ev1',
                 func: function (data) {
                     throw new Error("YES!");
@@ -360,7 +342,7 @@ describe('Commands Sanity Tests', function () {
 
             expect(id).to.exist;
 
-            var res = commands.command({appName: 'app1', cmdName: 'ev1', data: data}, function (err) {
+            var res = commands.command({cmdName: 'ev1', data: data}, function (err) {
                 called = true;
                 expect(err).to.exist;
                 expect(err.message).to.equal("YES!");

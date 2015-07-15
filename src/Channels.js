@@ -4,19 +4,19 @@
 ;(function (root, factory) {
     "use strict";
     /* istanbul ignore if  */
-    if ("object" === typeof exports) {
-        // CommonJS
-        factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"));
-    }
     //<amd>
-    /* istanbul ignore next  */
-    else if ("function" === typeof define && define.amd) {
+    if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
-        define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres"], function (Events, Commands, Reqres) {
-            return factory(root, root, Events, Commands, Reqres, true);
+        define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres", "Chronos.EventsUtil"], function (Events, Commands, Reqres, EventsUtil) {
+            return factory(root, root, Events, Commands, Reqres, EventsUtil, true);
         });
     }
     //</amd>
+    /* istanbul ignore next  */
+    else if ("object" === typeof exports) {
+        // CommonJS
+        factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"), require("./util/EventsUtil"));
+    }
     /* istanbul ignore next  */
     else {
         /**
@@ -25,17 +25,17 @@
          * @depend ./Reqres.js
          */
             // Browser globals
-        root.Chronos = root.Chronos || {};
-        root.Chronos.Channels = factory(root, root.Chronos, root.Chronos.Events, root.Chronos.Commands, root.Chronos.ReqRes, true);
+        var chronos = root.Chronos = root.Chronos || {};
+        root.Chronos.Channels = factory(root, chronos, chronos.Events, chronos.Commands, chronos.ReqRes, chronos.EventsUtil, true);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, Events, Commands, ReqRes, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, Events, Commands, ReqRes, evUtil, hide) {
     function Channels(options) {
 
         options = options || {};
 
-        var events = options.events || new Events(options);
-        var commands = options.commands || new Commands(options);
-        var reqres = options.reqres || new ReqRes(options);
+        var events = options.events || new Events(options.eventsOptions || options );
+        var commands = options.commands || new Commands(options.commandsOptions || options);
+        var reqres = options.reqres || new ReqRes(options.reqresOptions || options);
 
         this.once = events.once;
         this.hasFiredEvents = events.hasFired;
@@ -66,13 +66,13 @@
             name = null;
         }
 
-        name = (name || ("ch_" + (Date.now() * Math.random())));
+        name = (name || evUtil.getId("ch"));
 
         options = options || {};
 
-        options.events = new Events.NamedEvents("ev_" + name, options);
-        //todo: create named commands
-        //todo: create named reqres
+        options.events = new Events.NamedEvents("ev_" + name, options.eventsOptions || options);
+        options.commands = new Commands.NamedCommands("cm_" + name, options.commandsOptions || options);
+        options.reqres = new ReqRes.NamedEvents("rr_" + name, options.reqresOptions || options);
 
         Channels.call(this, options);
     }
