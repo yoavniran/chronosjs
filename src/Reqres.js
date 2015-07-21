@@ -62,7 +62,6 @@
             }
             return cmdUtil.bind({
                 cmd: req,
-                appName: req.appName,
                 attrName: attrName,
                 loggerName: appName,
                 prefix: prefix,
