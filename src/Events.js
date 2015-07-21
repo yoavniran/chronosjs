@@ -70,32 +70,6 @@
             return null;
         }
 
-        function _getBindEventData(app, ev, fn){
-            var evData = app;
-
-            if ("string" === typeof app) {
-                evData = {
-                    appName: app,
-                    eventName: ev,
-                    func: fn
-                };
-            }
-
-            if (evData) {
-                evData.appName = evData.appName || defaultAppName;
-
-                if ("*" !== defaultAppName) {
-                    if ("string" === typeof app && ("function" === typeof ev || "undefined" === typeof ev)) {
-                        evData.eventName = app;
-                        evData.appName = defaultAppName;
-                        evData.func = ev;
-                    }
-                }
-            }
-
-            return evData;
-        }
-
         /**
          * This function allows registering for events with the following structure:
          * @param app = {
@@ -243,6 +217,32 @@
         }
 
         //------------------- Private methods ------------------------------//
+
+        function _getBindEventData(app, ev, fn){
+            var evData = app;
+
+            if ("string" === typeof app) {
+                evData = {
+                    appName: app,
+                    eventName: ev,
+                    func: fn
+                };
+            }
+
+            if (evData) {
+                evData.appName = evData.appName || defaultAppName;
+
+                if ("*" !== defaultAppName) {
+                    if ("string" === typeof app && ("function" === typeof ev || "undefined" === typeof ev)) {
+                        evData.eventName = app;
+                        evData.appName = defaultAppName;
+                        evData.func = ev;
+                    }
+                }
+            }
+
+            return evData;
+        }
 
         function _createCallBack(callBack, callBackEventData, triggerInformation) {
             return function () {
