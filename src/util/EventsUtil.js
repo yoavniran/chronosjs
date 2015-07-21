@@ -1,5 +1,6 @@
 ;(function (root, factory) {
     "use strict";
+
     /* istanbul ignore if */
     //<amd>
     if ("function" === typeof define && define.amd) {
@@ -7,25 +8,22 @@
         define("Chronos.EventsUtil", [], function () {
             return factory(root, root, true);
         });
-
         return;
     }
     //</amd>
     /* istanbul ignore next */
     if ("object" === typeof exports) {
         // CommonJS
-        factory(root, module);
+        factory(root, exports);
     }
     /* istanbul ignore next  */
     else {
         // Browser globals
         root.Chronos = root.Chronos || {};
-        root.Chronos.EventsUtil = factory(root, root.Chronos, true);
+        factory(root, root.Chronos);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, hide) {
     "use strict";
-
-    var _idCounter = 1;
 
     function getListeners(lstnrs, eventName, appName) {
         var callBacks = [];
@@ -187,10 +185,6 @@
         data = null;
     }
 
-    function getId(prefix){
-        return prefix + "_" + (_idCounter++);
-    }
-
     function _unregister(lstnrs, eventId) {
         var unBound = false;
         if (!eventId) {
@@ -261,12 +255,11 @@
         unbind: unbind,
         hasFired: hasFired,
         cloneEventData: cloneEventData,
-        storeEventData: storeEventData,
-        getId: getId
+        storeEventData: storeEventData
     };
 
     if (!hide) {
-        module.exports = ret;
+        exports.EventsUtil = exports.EventsUtil || ret;
     }
 
     return ret;

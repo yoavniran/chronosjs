@@ -8,14 +8,13 @@
         define("Chronos.Commands", ["Chronos.EventsUtil", "Chronos.CommandsUtil"], function (EventsUtil, CommandsUtil) {
             return factory(root, root, EventsUtil, CommandsUtil, true);
         });
-
         return;
     }
     //</amd>
     /* istanbul ignore next  */
     if ("object" === typeof exports) {
         // CommonJS
-        factory(root, module, require("./util/EventsUtil"), require("./util/CommandsUtil"));
+        factory(root, exports, require("util/EventsUtil"), require("util/CommandsUtil"));
     }
     /* istanbul ignore next  */
     else {
@@ -25,9 +24,9 @@
          */
         // Browser globals
         root.Chronos = root.Chronos || {};
-        root.Chronos.Commands = factory(root, root.Chronos, root.Chronos.EventsUtil, root.Chronos.CommandsUtil, true);
+        factory(root, root.Chronos, root.Chronos.EventsUtil, root.Chronos.CommandsUtil);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, evUtil, cmdUtil, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, evUtil, cmdUtil, hide) {
     "use strict";
 
     function Commands(defaults) {
@@ -189,7 +188,7 @@
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
-        module.exports = Commands;
+        exports.Commands = exports.Commands || Commands;
     }
     return Commands;
 }));

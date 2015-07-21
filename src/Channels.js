@@ -10,14 +10,13 @@
         define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres"], function (Events, Commands, Reqres) {
             return factory(root, root, Events, Commands, Reqres, true);
         });
-
         return;
     }
     //</amd>
     /* istanbul ignore next  */
     if ("object" === typeof exports) {
         // CommonJS
-        factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"));
+        factory(root, exports, require("./Events"), require("./Commands"), require("./Reqres"));
     }
     /* istanbul ignore next  */
     else {
@@ -26,11 +25,13 @@
          * @depend ./Commands.js
          * @depend ./Reqres.js
          */
-            // Browser globals
-        var chronos = root.Chronos = root.Chronos || {};
-        root.Chronos.Channels = factory(root, chronos, chronos.Events, chronos.Commands, chronos.ReqRes, true);
+        // Browser globals
+        root.Chronos = root.Chronos || {};
+        factory(root, root.Chronos, root.Chronos.Events, root.Chronos.Commands, root.Chronos.ReqRes);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, Events, Commands, ReqRes, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, Events, Commands, ReqRes, hide) {
+    "use strict";
+
     function Channels(options) {
 
         options = options || {};
@@ -88,7 +89,7 @@
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
-        module.exports = Channels;
+        exports.Channels = exports.Channels || Channels;
     }
     return Channels;
 }));

@@ -8,14 +8,13 @@
         define("Chronos.Events", ["Chronos.EventsUtil"], function (EventsUtil) {
             return factory(root, root, EventsUtil, true);
         });
-
         return;
     }
     //</amd>
     /* istanbul ignore next  */
     if ("object" === typeof exports) {
         // CommonJS
-        factory(root, module, require("./util/EventsUtil"));
+        factory(root, exports, require("util/EventsUtil"));
     }
     /* istanbul ignore next  */
     else {
@@ -24,7 +23,7 @@
          */
             // Browser globals
         root.Chronos = root.Chronos || {};
-        root.Chronos.Events = factory(root, root.Chronos, root.Chronos.EventsUtil, true);
+        factory(root, root.Chronos, root.Chronos.EventsUtil);
     }
 }(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, exports, evUtil, hide) {
     "use strict";
@@ -290,7 +289,7 @@
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
-        module.exports = Events;
+        exports.Events = exports.Events || Events;
     }
 
     return Events;
