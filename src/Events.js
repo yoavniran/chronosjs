@@ -8,10 +8,12 @@
         define("Chronos.Events", ["Chronos.EventsUtil"], function (EventsUtil) {
             return factory(root, root, EventsUtil, true);
         });
+
+        return;
     }
     //</amd>
     /* istanbul ignore next  */
-    else if ("object" === typeof exports) {
+    if ("object" === typeof exports) {
         // CommonJS
         factory(root, module, require("./util/EventsUtil"));
     }

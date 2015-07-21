@@ -10,10 +10,12 @@
         define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres"], function (Events, Commands, Reqres) {
             return factory(root, root, Events, Commands, Reqres, true);
         });
+
+        return;
     }
     //</amd>
     /* istanbul ignore next  */
-    else if ("object" === typeof exports) {
+    if ("object" === typeof exports) {
         // CommonJS
         factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"));
     }
