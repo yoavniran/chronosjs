@@ -37,8 +37,10 @@
             prefix = "cmdId_",
             indexer = 0,
             cloneData,
-            eventBufferLimit;
+            eventBufferLimit,
+            defaultAppName;
 
+        defaultAppName = defaults && defaults.appName || "*";
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
 
@@ -54,6 +56,9 @@
          * @return {String} - command Id.
          */
         function comply(cmd) {
+            if ("*" !== defaultAppName) {
+                cmd.appName = cmd.appName || defaultAppName;
+            }
             return cmdUtil.bind({
                 cmd: cmd,
                 attrName: attrName,
@@ -75,6 +80,9 @@
          * @return {Boolean} - has stopped complying.
          */
         function stopComplying(unbindObj) {
+            if ("*" !== defaultAppName) {
+                unbindObj.appName = unbindObj.appName || defaultAppName;
+            }
             return evUtil.unbind({
                 unbindObj: unbindObj,
                 attrName: attrName,
@@ -90,6 +98,11 @@
          * @return {Array}
          */
         function hasFired(app, cmdName) {
+            if ("undefined" === typeof cmdName) {
+                cmdName = app;
+                app = defaultAppName;
+            }
+
             return evUtil.hasFired(fired, app, cmdName);
         }
 
@@ -109,6 +122,9 @@
             if (!cmd || typeof (cmd.cmdName) === "undefined" || !cmdUtil.valid(cmd, cmd.cmdName)) {
                 evUtil.log("CMD name not spec for command", "ERROR", "Commands");
                 return null;
+            }
+            if ("*" !== defaultAppName) {
+                cmd.appName = cmd.appName || defaultAppName;
             }
             cmd.passDataByRef = cmd.passDataByRef || !cloneData;
             _storeEventData(cmd);
