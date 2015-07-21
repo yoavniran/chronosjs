@@ -375,22 +375,40 @@ describe('Commands Sanity Tests', function () {
 
     describe("check response on named commands", function () {
         var res;
-        var namedCommands = new Commands({ appName: "NamedCommands" });
+        var appName =  "NamedCommands";
+        var namedCommands;
+
+        before(function () { //if commands init doesnt happen inside the before fn then the tests of this context arent executed - theyre simply ignored!
+            namedCommands  = new Commands({ appName: appName });
+        });
 
         it("should respond with 1", function () {
+
+            var cntr = 0;
+
             var cmdId = namedCommands.comply({
                 cmdName: "get",
                 func: function () {
+                    cntr+=1;
                     return 1;
                 }
             });
 
-            res = namedCommands.command({
+            namedCommands.command({
                 cmdName: "get",
                 data: {}
             });
+
+            res = namedCommands.command({
+                appName: appName,
+                cmdName: "get",
+                data: {}
+            });
+
+
             expect(cmdId).not.to.be.null;
             expect(res).to.be.true;
+            expect(cntr).to.equal(2);
         });
     });
 

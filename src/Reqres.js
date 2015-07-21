@@ -184,39 +184,6 @@
         this.stopReplying = stopReplying;
     }
 
-    function NamedReqRes(appName, defaults){
-
-        if (typeof appName !== "string") {
-            defaults = appName;
-            appName = null;
-        }
-
-        var reqres = new ReqRes(defaults),
-            inst = this;
-
-        appName = (appName || evUtil.getId("rr"));
-
-        ["request", "reply", "stopReplying"].forEach(function(fn){
-            inst[fn] = function(){
-                if (arguments[0]){
-                    arguments[0].appName = arguments[0].appName || appName; //if appName provided, dont override
-                }
-
-                return reqres[fn].apply(reqres, arguments);
-            };
-        });
-
-        this.hasFired = function () { //add appName as first par
-            var args = Array.prototype.slice.call(arguments);
-            if (args.length === 1) {
-                args.unshift(appName);
-            }
-            return reqres.hasFired.apply(reqres, args);
-        };
-    }
-
-    ReqRes.NamedReqRes = NamedReqRes;
-
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {

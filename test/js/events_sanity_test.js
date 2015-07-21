@@ -4,7 +4,7 @@ describe("Events Sanity Tests", function () {
 
     before(function (done) {
         if ("undefined" !== typeof define) {
-            require(["Chronos.Events"], function(_Events) {
+            require(["Chronos.Events"], function (_Events) {
                 Events = _Events;
                 done();
             });
@@ -239,9 +239,10 @@ describe("Events Sanity Tests", function () {
 
     describe("check once works", function () {
 
-        var counter = 0;
+        it("should only fire once - object", function () {
 
-        it("should only fire once", function () {
+            var counter = 0;
+
             var id = events.once({
                 appName: "app1",
                 eventName: "ev1",
@@ -258,6 +259,28 @@ describe("Events Sanity Tests", function () {
             events.trigger("app1", "ev1");
 
             expect(events.hasFired("app1", "ev1").length).to.equal(2);
+            expect(counter).to.equal(1);
+
+        });
+
+        it("should only fire once - pars", function () {
+
+            var counter = 0;
+
+            var id = events.once("app1","ev2",
+                function () {
+                    counter++;
+                });
+
+            expect(id).to.not.be.null;
+            events.trigger("app1", "ev2");
+
+            expect(events.hasFired("app1", "ev2").length).to.equal(1);
+            expect(counter).to.equal(1);
+
+            events.trigger("app1", "ev2");
+
+            expect(events.hasFired("app1", "ev2").length).to.equal(2);
             expect(counter).to.equal(1);
 
         });
@@ -511,30 +534,76 @@ describe("Events Sanity Tests", function () {
     });
 
     describe("named events", function () {
-        var namedEvents = new Events({ appName: "NamedEvents" });
+
+        var appName = "NamedEvents";
         var obj = {x: 0, y: 0, z: 0};
         var evList = [];
+        var namedEvents;
 
-        it("should trigger the event", function () {
+        before(function () { //if events init doesnt happen inside the before fn then the tests of this context arent executed - theyre simply ignored!
+            namedEvents = new Events({appName: appName});
+        });
 
-            evList.push(namedEvents.bind({ eventName: "*" }, function (obj) {
+        it("should trigger the events", function () {
+
+            evList.push(namedEvents.bind({eventName: "*", func: function (obj) {
                 obj.x += 1;
-            }));
+            }}));
             evList.push(namedEvents.bind("*", function (obj) {
                 obj.y += 1;
             }));
             evList.push(namedEvents.bind("evTest1", function (obj) {
                 obj.z += 1;
             }));
-            namedEvents.trigger({ eventName: "evTest1" }, obj);
+            namedEvents.trigger({eventName: "evTest1", data: obj});
             namedEvents.trigger("evTest1", obj);
-            namedEvents.trigger("*", obj);
+            namedEvents.trigger(appName, "evTest1", obj);
 
             expect(obj.x).to.equal(3);
             expect(obj.y).to.equal(3);
             expect(obj.z).to.equal(3);
         });
 
+        it("should trigger only once", function(){
+
+            var cntr = 0;
+
+            namedEvents.once("evTestOnce", function(){
+                cntr+=1;
+            });
+
+            namedEvents.trigger("evTestOnce");
+            namedEvents.trigger("evTestOnce");
+
+            expect(cntr).to.equal(1);
+        });
+
+        it("should trigger when using the app name in the trigger", function () {
+
+            var cntr = 0;
+
+            namedEvents.bind("evTestI", function () {
+                cntr += 1;
+            });
+
+            namedEvents.trigger(appName, "evTestI");
+            namedEvents.trigger("not the right app name", "evTestI");
+
+            expect(cntr).to.equal(1);
+        });
+
+        it("should trigger when using simple pars without appName", function () {
+
+            var cntr = 0;
+
+            namedEvents.bind("evTestII", function () {
+                cntr += 1;
+            });
+
+            namedEvents.trigger("evTestII");
+
+            expect(cntr).to.equal(1);
+        });
     });
 
     function unbindEvents(evList) {

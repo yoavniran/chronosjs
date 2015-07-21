@@ -433,7 +433,12 @@ describe('ReqRes Sanity Tests', function () {
 
     describe("check response on named reqres", function () {
         var res;
-        var namedReqRes = new ReqRes({ appName: "NamedReqRes" });
+        var appName =  "NamedReqRes";
+        var namedReqRes;
+
+        before(function () { //if reqres init doesnt happen inside the before fn then the tests of this context arent executed - theyre simply ignored!
+            namedReqRes = new ReqRes({ appName:appName});
+        });
 
         it("should respond with 1", function () {
             var reqId = namedReqRes.reply({
@@ -443,12 +448,14 @@ describe('ReqRes Sanity Tests', function () {
                 }
             });
 
-            res = namedReqRes.command({
+            res = namedReqRes.request({
+                appName: appName,
                 reqName: "get",
                 data: {}
             });
+
             expect(reqId).not.to.be.null;
-            expect(res).to.be.true;
+            expect(res).to.equal(1);
         });
     });
 });

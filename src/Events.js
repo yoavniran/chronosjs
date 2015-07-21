@@ -59,25 +59,41 @@
          * @return {*}
          */
         function once(app, ev, fn) {
-            var data;
+
+            var evData = _getBindEventData(app, ev, fn);
+
+            if (evData) {
+                evData.triggerOnce = true;
+                return bind(evData);
+            }
+
+            return null;
+        }
+
+        function _getBindEventData(app, ev, fn){
+            var evData = app;
 
             if ("string" === typeof app) {
-                data = {
+                evData = {
                     appName: app,
                     eventName: ev,
                     func: fn
                 };
             }
-            else {
-                data = app;
+
+            if (evData) {
+                evData.appName = evData.appName || defaultAppName;
+
+                if ("*" !== defaultAppName) {
+                    if ("string" === typeof app && ("function" === typeof ev || "undefined" === typeof ev)) {
+                        evData.eventName = app;
+                        evData.appName = defaultAppName;
+                        evData.func = ev;
+                    }
+                }
             }
 
-            if (data) {
-                data.triggerOnce = true;
-                return bind(data);
-            }
-
-            return null;
+            return evData;
         }
 
         /**
@@ -96,27 +112,14 @@
          * @return {*}
          */
         function bind(app, ev, fn) {
-            var evData = app;
 
-            if ("string" === typeof app) {
-                evData = {
-                    appName: app,
-                    eventName: ev,
-                    func: fn
-                };
-            }
-
-            evData.appName = evData.appName || defaultAppName;
-            if ("*" !== defaultAppName) {
-                if ("string" === typeof app && ("function" === typeof ev || "undefined" === typeof ev)) {
-                    evData.eventName = app;
-                }
-            }
+            var evData = _getBindEventData(app, ev, fn);
 
             if (!evData.eventName || !evData.func || ("function" !== typeof evData.func && evData.func.constructor !== Array)) {
                 evUtil.log("Ev listen has invalid params: evName=[" + evData.eventName + "]", "ERROR", "Events");
                 return null;
             }
+
             if (evData.func.constructor === Array) {
                 var evIds = [], cloneEvent, cloneId;
                 for (var i = 0; i < evData.func.length; i++) {
@@ -127,6 +130,7 @@
                 }
                 return evIds;
             }
+
             var evId = prefix + (eventId++);
             var newObj = {
                 id: evId,
@@ -206,18 +210,22 @@
                 triggerData.appName = triggerData.appName || defaultAppName;
                 if ("string" === typeof app && ("object" === typeof evName || "undefined" === typeof evName)) {
                     triggerData.eventName = app;
+                    triggerData.appName = defaultAppName;
+                    triggerData.data = evName;
                 }
             }
+
             if (!triggerData || typeof (triggerData.eventName) === "undefined") {
                 evUtil.log("Ev name not spec for publish", "ERROR", "Events");
                 triggerData = null;
                 return null;
             }
+
             triggerData.passDataByRef = triggerData.passDataByRef || !cloneData;
+
             _storeEventData(triggerData);
 
             var callBacks = evUtil.getListeners(lstnrs, triggerData.eventName, triggerData.appName);
-
             if (callBacks.length > 0) {
                 for (var j = 0; j < callBacks.length; j++) {
                     var eventData = triggerData.passDataByRef ? triggerData.data : evUtil.cloneEventData(triggerData.data);//Clone the event data if there was not an explicit request to passByRef
@@ -276,58 +284,6 @@
         this.unbind = unbind;
         this.unregister = unbind;
     }
-
-    /**
-     * Makes it possible to use ChronosJS events without having to pass an appName
-     * for every method
-     * @param appName the app name to use for all events triggering and binding
-     * @constructor
-     */
-    function NamedEvents(appName, defaults) {
-
-        if (typeof appName !== "string") {
-            defaults = appName;
-            appName = null;
-        }
-
-        var events = new Events(defaults),
-            inst = this;
-
-        appName = (appName || evUtil.getId("ev"));
-
-        ["unbind", "unregister"].forEach(function (fn) { //run as is, no need to touch parameters
-            inst[fn] = function () {
-                return events[fn].apply(events, arguments);
-            };
-        });
-
-        ["bind", "once", "register", //add appName either as first par or into event data object
-            "on", "trigger", "publish"].forEach(function (fn) {
-                inst[fn] = function () {
-                    var args = Array.prototype.slice.call(arguments);
-
-                    if (typeof args[0] === "string") {
-                        args.unshift(appName);
-                    }
-                    else if (typeof args[0] !== "undefined") {
-                        args[0].appName = args[0].appName || appName; //if provided dont override
-                    }
-
-                    return events[fn].apply(events, args);
-                };
-            });
-
-
-        this.hasFired = function () { //add appName as first par
-            var args = Array.prototype.slice.call(arguments);
-            if (args.length === 1) {
-                args.unshift(appName);
-            }
-            return events.hasFired.apply(events, args);
-        };
-    }
-
-    Events.NamedEvents = NamedEvents;
 
     // attach properties to the exports object to define
     // the exported module properties.

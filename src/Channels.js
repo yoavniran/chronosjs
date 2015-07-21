@@ -33,51 +33,55 @@
 
         options = options || {};
 
-        var events = options.events || new Events(options.eventsOptions || options );
-        var commands = options.commands || new Commands(options.commandsOptions || options);
-        var reqres = options.reqres || new ReqRes(options.reqresOptions || options);
+        var appName = options.appName;
 
-        this.once = events.once;
-        this.hasFiredEvents = events.hasFired;
-        this.trigger = events.trigger;
-        this.publish = events.publish;
-        this.bind = events.bind;
-        this.register = events.register;
-        this.unbind = events.unbind;
-        this.unregister = events.unregister;
-        this.hasFiredCommands = commands.hasFired;
-        this.comply = commands.comply;
-        this.stopComplying = commands.stopComplying;
-        this.command = commands.command;
-        this.hasFiredReqres = reqres.hasFired;
-        this.request = reqres.request;
-        this.reply = reqres.reply;
-        this.stopReplying = reqres.stopReplying;
+        initChannelEvents(this, options, appName);
+        initChannelCommands(this, options, appName);
+        initChannelReqRes(this, options, appName);
     }
 
-    /**
-     *
-     * @constructor
-     */
-    function NamedChannel(name, options) {
+    function initChannelEvents(channel, options, appName){
 
-        if (typeof name !== "string") {
-            options = name;
-            name = null;
-        }
+        options = options.eventsOptions || options;
+        options.appName = options.appName || appName; //make it possible to set a name once for the channel's objects
 
-        name = (name || evUtil.getId("ch"));
+        var events = options.events || new Events(options);
 
-        options = options || {};
-
-        options.events = new Events.NamedEvents("ev_" + name, options.eventsOptions || options);
-        options.commands = new Commands.NamedCommands("cm_" + name, options.commandsOptions || options);
-        options.reqres = new ReqRes.NamedReqRes("rr_" + name, options.reqresOptions || options);
-
-        Channels.call(this, options);
+        channel.once = events.once;
+        channel.hasFiredEvents = events.hasFired;
+        channel.trigger = events.trigger;
+        channel.publish = events.publish;
+        channel.bind = events.bind;
+        channel.register = events.register;
+        channel.unbind = events.unbind;
+        channel.unregister = events.unregister;
     }
 
-    Channels.NamedChannel = NamedChannel;
+    function initChannelCommands(channel, options, appName){
+
+        options = options.commandsOptions || options;
+        options.appName = options.appName || appName; //make it possible to set a name once for the channel's objects
+
+        var commands = options.commands || new Commands(options);
+
+        channel.hasFiredCommands = commands.hasFired;
+        channel.comply = commands.comply;
+        channel.stopComplying = commands.stopComplying;
+        channel.command = commands.command;
+    }
+
+    function initChannelReqRes(channel, options, appName){
+
+        options = options.reqresOptions || options;
+        options.appName = options.appName || appName; //make it possible to set a name once for the channel's objects
+
+        var reqres = options.reqres || new ReqRes(options);
+
+        channel.hasFiredReqres = reqres.hasFired;
+        channel.request = reqres.request;
+        channel.reply = reqres.reply;
+        channel.stopReplying = reqres.stopReplying;
+    }
 
     // attach properties to the exports object to define
     // the exported module properties.

@@ -184,39 +184,6 @@
         this.command = command;
     }
 
-    function NamedCommands(appName, defaults){
-
-        if (typeof appName !== "string") {
-            defaults = appName;
-            appName = null;
-        }
-
-        var commands = new Commands(defaults),
-            inst = this;
-
-        appName = (appName || evUtil.getId("cm"));
-
-        ["comply", "command", "stopComplying"].forEach(function(fn){
-            inst[fn] = function(){
-                if (arguments[0]){
-                    arguments[0].appName = arguments[0].appName || appName; //if appName provided, dont override
-                }
-
-                return commands[fn].apply(commands, arguments);
-            };
-        });
-
-        this.hasFired = function () { //add appName as first par
-            var args = Array.prototype.slice.call(arguments);
-            if (args.length === 1) {
-                args.unshift(appName);
-            }
-            return commands.hasFired.apply(commands, args);
-        };
-    }
-
-    Commands.NamedCommands = NamedCommands;
-
     // attach properties to the exports object to define
     // the exported module properties.
     if (!hide) {
