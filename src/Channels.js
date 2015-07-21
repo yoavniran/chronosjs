@@ -7,15 +7,15 @@
     //<amd>
     if ("function" === typeof define && define.amd) {
         // AMD. Register as an anonymous module.
-        define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres", "Chronos.EventsUtil"], function (Events, Commands, Reqres, EventsUtil) {
-            return factory(root, root, Events, Commands, Reqres, EventsUtil, true);
+        define("Chronos.Channels", ["Chronos.Events", "Chronos.Commands", "Chronos.Reqres"], function (Events, Commands, Reqres) {
+            return factory(root, root, Events, Commands, Reqres, true);
         });
     }
     //</amd>
     /* istanbul ignore next  */
     else if ("object" === typeof exports) {
         // CommonJS
-        factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"), require("./util/EventsUtil"));
+        factory(root, module, require("./Events"), require("./Commands"), require("./Reqres"));
     }
     /* istanbul ignore next  */
     else {
@@ -26,9 +26,9 @@
          */
             // Browser globals
         var chronos = root.Chronos = root.Chronos || {};
-        root.Chronos.Channels = factory(root, chronos, chronos.Events, chronos.Commands, chronos.ReqRes, chronos.EventsUtil, true);
+        root.Chronos.Channels = factory(root, chronos, chronos.Events, chronos.Commands, chronos.ReqRes, true);
     }
-}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, Events, Commands, ReqRes, evUtil, hide) {
+}(typeof ChronosRoot === "undefined" ? this : ChronosRoot, function (root, module, Events, Commands, ReqRes, hide) {
     function Channels(options) {
 
         options = options || {};
