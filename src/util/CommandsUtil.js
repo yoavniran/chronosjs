@@ -15,7 +15,7 @@
     /* istanbul ignore next */
     if ("object" === typeof exports) {
         // CommonJS
-        factory(root, exports, require("./EventsUtil"));
+        factory(root, exports, require("./EventsUtil").EventsUtil);
     }
     /* istanbul ignore next  */
     else {
