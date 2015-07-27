@@ -55,6 +55,7 @@
         channel.trigger = events.trigger;
         channel.publish = events.publish;
         channel.bind = events.bind;
+        channel.on = events.on;
         channel.register = events.register;
         channel.unbind = events.unbind;
         channel.unregister = events.unregister;
