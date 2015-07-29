@@ -38,12 +38,12 @@
 
         var appName = options.appName;
 
-        _initChannelEvents(this, options, appName);
-        _initChannelCommands(this, options, appName);
-        _initChannelReqRes(this, options, appName);
+        initChannelEvents(this, options, appName);
+        initChannelCommands(this, options, appName);
+        initChannelReqRes(this, options, appName);
     }
 
-    function _initChannelEvents(channel, options, appName){
+    function initChannelEvents(channel, options, appName){
 
         options = options.eventsOptions || options;
         options.appName = options.appName || appName; //make it possible to set a name once for the channel's objects
@@ -61,7 +61,7 @@
         channel.unregister = events.unregister;
     }
 
-    function _initChannelCommands(channel, options, appName){
+    function initChannelCommands(channel, options, appName){
 
         options = options.commandsOptions || options;
         options.appName = options.appName || appName; //make it possible to set a name once for the channel's objects
@@ -74,7 +74,7 @@
         channel.command = commands.command;
     }
 
-    function _initChannelReqRes(channel, options, appName){
+    function initChannelReqRes(channel, options, appName){
 
         options = options.reqresOptions || options;
         options.appName = options.appName || appName; //make it possible to set a name once for the channel's objects
