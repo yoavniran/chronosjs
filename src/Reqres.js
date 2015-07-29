@@ -1,4 +1,5 @@
-;(function (root, factory) {
+;
+(function (root, factory) {
     "use strict";
 
     /* istanbul ignore if  */
@@ -22,7 +23,7 @@
          * @depend ./util/EventsUtil.js
          * @depend ./util/CommandsUtil.js
          */
-        // Browser globals
+            // Browser globals
         root.Chronos = root.Chronos || {};
         factory(root, root.Chronos, root.Chronos.EventsUtil, root.Chronos.CommandsUtil);
     }
@@ -37,6 +38,7 @@
             fired = [],
             prefix = "reqId_",
             indexer = 0,
+            rethrow, //default true
             cloneData,
             eventBufferLimit,
             defaultAppName;
@@ -44,7 +46,7 @@
         defaultAppName = defaults && defaults.appName || "*";
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
-
+        rethrow = (defaults && defaults.rethrow === false ? false : true);
         /**
          * This function allows registering for command with the following structure:
          * @param req = {
@@ -149,15 +151,22 @@
                         reqData = null;//Delete local pointer
                         callBack = null;
                     } catch (err) {
+                        //noinspection JSUnresolvedVariable
+                        evUtil.log("Error executing " + requestInformation.reqName + " requestId: " + callBack.id + "e=" + err.message, "ERROR", "ReqRes");
+
                         if ("function" === typeof cb) {
                             try {
                                 cb(err);
                             } catch (e) {
                                 evUtil.log("Error executing callback on error, " + requestInformation.reqName + " requestId: " + callBack.id + "e=" + e.message, "ERROR", "ReqRes");
+                                if (rethrow) {
+                                    throw e;
+                                }
                             }
                         }
-                        //noinspection JSUnresolvedVariable
-                        evUtil.log("Error executing " + requestInformation.reqName + " requestId: " + callBack.id + "e=" + err.message, "ERROR", "ReqRes");
+                        else if (rethrow) {
+                            throw err;
+                        }
                     }
                 }
             }

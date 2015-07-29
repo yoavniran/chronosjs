@@ -1,4 +1,5 @@
-;(function (root, factory) {
+;
+(function (root, factory) {
     "use strict";
 
     /* istanbul ignore if  */
@@ -22,7 +23,7 @@
          * @depend ./util/EventsUtil.js
          * @depend ./util/CommandsUtil.js
          */
-        // Browser globals
+            // Browser globals
         root.Chronos = root.Chronos || {};
         factory(root, root.Chronos, root.Chronos.EventsUtil, root.Chronos.CommandsUtil);
     }
@@ -37,6 +38,7 @@
             fired = [],
             prefix = "cmdId_",
             indexer = 0,
+            rethrow, //default true
             cloneData,
             eventBufferLimit,
             defaultAppName;
@@ -44,6 +46,7 @@
         defaultAppName = defaults && defaults.appName || "*";
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
+        rethrow = (defaults && defaults.rethrow === false ? false : true);
 
         /**
          * This function allows registering for command with the following structure:
@@ -148,15 +151,22 @@
                         cmdData = null;//Delete local pointer
                         callBack = null;
                     } catch (err) {
+                        //noinspection JSUnresolvedVariable
+                        evUtil.log("Error executing " + cmd.cmdName + " commandId: " + callBack.id + "e=" + err.message, "ERROR", "Commands");
+
                         if ("function" === typeof cb) {
                             try {
                                 cb(err);
                             } catch (e) {
-                                evUtil.log("Error executing callback on error, " +cmd.cmdName + " commandId: " + callBack.id + "e=" + e.message, "ERROR", "Commands");
+                                evUtil.log("Error executing callback on error, " + cmd.cmdName + " commandId: " + callBack.id + "e=" + e.message, "ERROR", "Commands");
+                                if (rethrow) {
+                                    throw e;
+                                }
                             }
                         }
-                        //noinspection JSUnresolvedVariable
-                        evUtil.log("Error executing " + cmd.cmdName + " commandId: " + callBack.id + "e=" + err.message, "ERROR", "Commands");
+                        else if (rethrow) {
+                            throw err;
+                        }
                     }
                 }
             }

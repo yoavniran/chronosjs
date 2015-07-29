@@ -36,6 +36,7 @@
             fired = [],
             prefix = "evId_",
             indexer = 0,
+            rethrow, //default true
             cloneData,
             eventBufferLimit,
             defaultAppName;
@@ -43,6 +44,7 @@
         defaultAppName = defaults && defaults.appName || "*";
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
+        rethrow = (defaults &&  defaults.rethrow === false ? false : true);
 
         /**
          * This registers to an event only once, if it has fired the bind will be removed
@@ -257,6 +259,9 @@
                 } catch (err) {
                     //noinspection JSUnresolvedVariable
                     evUtil.log("Error executing " + triggerInformation.eventName + " eventId: " + callBack.id + "e=" + err.message, "ERROR", "Events");
+                    if (rethrow){
+                        throw err;
+                    }
                 }
             };
         }
