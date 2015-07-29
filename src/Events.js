@@ -37,6 +37,7 @@
             prefix = "evId_",
             indexer = 0,
             rethrow, //default true
+            async, //default false
             cloneData,
             eventBufferLimit,
             defaultAppName;
@@ -45,6 +46,7 @@
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
         rethrow = (defaults &&  defaults.rethrow === false ? false : true);
+        async = (defaults && defaults.async === true ? defaults.async : false);
 
         /**
          * This registers to an event only once, if it has fired the bind will be removed
@@ -113,7 +115,7 @@
                 id: evId,
                 func: evData.func,
                 context: evData.context || null,
-                aSync: evData.aSync ? true : false,
+                aSync: evData.aSync || async ? true : false,
                 appName: evData.appName,
                 triggerOnce: evData.triggerOnce || false
             };
