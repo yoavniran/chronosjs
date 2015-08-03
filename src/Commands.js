@@ -45,7 +45,7 @@
         defaultAppName = defaults && defaults.appName || "*";
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
-        rethrow = (defaults && defaults.rethrow === false ? false : true);
+        rethrow = (defaults &&  defaults.rethrow); //rethrow = (defaults && defaults.rethrow === false ? false : true);
 
         /**
          * This function allows registering for command with the following structure:
