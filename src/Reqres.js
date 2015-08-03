@@ -1,5 +1,4 @@
-;
-(function (root, factory) {
+;(function (root, factory) {
     "use strict";
 
     /* istanbul ignore if  */
