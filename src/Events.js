@@ -37,7 +37,7 @@
             prefix = "evId_",
             indexer = 0,
             rethrow, //default true
-            async, //default false
+            aSync, //default false
             cloneData,
             eventBufferLimit,
             defaultAppName;
@@ -46,7 +46,7 @@
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
         rethrow = (defaults &&  defaults.rethrow); // === false ? false : true);
-        async = (defaults && defaults.async === true ? defaults.async : false);
+        aSync = (defaults && defaults.aSync === true);
 
         /**
          * This registers to an event only once, if it has fired the bind will be removed
@@ -115,7 +115,7 @@
                 id: evId,
                 func: evData.func,
                 context: evData.context || null,
-                aSync: evData.aSync || async ? true : false,
+                aSync: (typeof evData.aSync !== "undefined") ? !!evData.aSync : !!aSync,
                 appName: evData.appName,
                 triggerOnce: evData.triggerOnce || false
             };
@@ -210,7 +210,7 @@
                     var eventData = triggerData.passDataByRef ? triggerData.data : evUtil.cloneEventData(triggerData.data);//Clone the event data if there was not an explicit request to passByRef
                     var eventInformation = {appName: triggerData.appName, eventName: triggerData.eventName};
                     var callBack = callBacks[j];
-                    if (callBack.aSync || (eventData && eventData.aSync)) {
+                    if (callBack.aSync || triggerData.aSync || (eventData && eventData.aSync)) {
                         setTimeout(_createCallBack(callBack, eventData, eventInformation), 0);
                     } else {
                         _createCallBack(callBack, eventData, eventInformation)();
@@ -290,6 +290,7 @@
         this.register = bind;
         this.on = bind;
         this.unbind = unbind;
+        this.off = unbind;
         this.unregister = unbind;
     }
 
