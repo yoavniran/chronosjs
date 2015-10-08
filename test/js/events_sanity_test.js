@@ -19,7 +19,7 @@ describe("Events Sanity Tests", function () {
     });
 
     describe("check for global scope", function () {
-        it("should not be polluted", function() {
+        it("should not be polluted", function () {
             expect(window.Chronos).to.be.undefined;
         })
     });
@@ -267,7 +267,7 @@ describe("Events Sanity Tests", function () {
 
             var counter = 0;
 
-            var id = events.once("app1","ev2",
+            var id = events.once("app1", "ev2",
                 function () {
                     counter++;
                 });
@@ -427,9 +427,7 @@ describe("Events Sanity Tests", function () {
             events.trigger({
                 appName: "app1",
                 eventName: "ev1",
-                data: {
-                    aSync: true
-                }
+                aSync: true
             });
 
             expect(fired).to.be.false;
@@ -447,7 +445,6 @@ describe("Events Sanity Tests", function () {
                 aSync: true,
                 func: function (data) {
                     fired = true;
-                    expect(fired).to.be.true;
                     done();
                 }
             });
@@ -459,6 +456,31 @@ describe("Events Sanity Tests", function () {
             expect(fired).to.be.false;
         });
 
+    });
+
+    describe("Check sync on trigger after async bind", function () {
+
+        it("should fire the event synchronously", function () {
+
+            var fired = false;
+
+            events.bind({
+                appName: "app1",
+                eventName: "ev1",
+                aSync: true,
+                func: function (data) {
+                    fired = true;
+                }
+            });
+
+            events.trigger({
+                appName: "app1",
+                eventName: "ev1",
+                aSync: false
+            });
+
+            expect(fired).to.be.true;
+        });
     });
 
     describe("trigger with multiple binds", function () {
@@ -546,9 +568,11 @@ describe("Events Sanity Tests", function () {
 
         it("should trigger the events", function () {
 
-            evList.push(namedEvents.bind({eventName: "*", func: function (obj) {
-                obj.x += 1;
-            }}));
+            evList.push(namedEvents.bind({
+                eventName: "*", func: function (obj) {
+                    obj.x += 1;
+                }
+            }));
             evList.push(namedEvents.bind("*", function (obj) {
                 obj.y += 1;
             }));
@@ -564,12 +588,12 @@ describe("Events Sanity Tests", function () {
             expect(obj.z).to.equal(3);
         });
 
-        it("should trigger only once", function(){
+        it("should trigger only once", function () {
 
             var cntr = 0;
 
-            namedEvents.once("evTestOnce", function(){
-                cntr+=1;
+            namedEvents.once("evTestOnce", function () {
+                cntr += 1;
             });
 
             namedEvents.trigger("evTestOnce");
@@ -603,6 +627,66 @@ describe("Events Sanity Tests", function () {
             namedEvents.trigger("evTestII");
 
             expect(cntr).to.equal(1);
+        });
+
+        it("should asynchronously trigger event even while default is sync=true", function (done) {
+            var triggered = false;
+            namedEvents.on("nonSyncBind", function () {
+                triggered = true;
+                done();
+            });
+
+            namedEvents.trigger({eventName: "nonSyncBind", async: true});
+
+            expect(triggered).to.be.false;
+        });
+    });
+
+    describe("check async as default", function () {
+
+        var testEvents;
+
+        before(function () { //if events init doesnt happen inside the before fn then the tests of this context arent executed - theyre simply ignored!
+            testEvents = new Events({appName: "async test", async: true});
+        });
+
+        it("should trigger async using default", function (done) {
+            var triggered = false;
+
+            testEvents.on("nonSyncBind", function () {
+                triggered = true;
+                done();
+            });
+
+            testEvents.trigger({eventName: "nonSyncBind"});
+
+            expect(triggered).to.be.false;
+        });
+
+        it("should trigger sync based on trigger config", function () {
+            var triggered = false;
+
+            testEvents.on("syncedBind", function () {
+                triggered = true;
+                done();
+            });
+
+            testEvents.trigger({eventName: "syncedBind", async: false, data: "some data"});
+
+            expect(triggered).to.be.true;
+        });
+
+        it("should trigger sync based on bind config", function(){
+            var triggered = false;
+
+            testEvents.on({eventName: "syncedBind", async: false, func: function () {
+                triggered = true;
+                done();
+            }});
+
+            testEvents.trigger({eventName: "syncedBind", data: "some data"});
+
+            expect(triggered).to.be.true;
         });
     });
 

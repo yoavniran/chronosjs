@@ -2,11 +2,13 @@
     "test": {
         "options": {
             "log": true,
+            "logErrors": true,
             "quiet": false,
             "threshold": 80,
             "globalThreshold": 84,
             "timeout": 10000,
             "--web-security" : false,
+            "reporter": "Spec",
             "urls": [
                 "http://localhost:8000/test/resources/events_test_base.html"
             ]

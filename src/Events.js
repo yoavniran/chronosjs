@@ -36,23 +36,23 @@
             fired = [],
             prefix = "evId_",
             indexer = 0,
-            rethrow, //default true
-            aSync, //default false
-            cloneData,
-            eventBufferLimit,
+            rethrow, //default false
+            sync = true, //default to synchronous events
+            cloneData, //default false
+            eventBufferLimit, //default -1 (turned off)
             defaultAppName;
 
         defaultAppName = defaults && defaults.appName || "*";
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
-        rethrow = (defaults &&  defaults.rethrow); // === false ? false : true);
-        aSync = (defaults && defaults.aSync === true);
+        rethrow = (defaults && defaults.rethrow === true);
+        sync = !(defaults && (defaults.aSync === true || defaults.async === true));
 
         /**
          * This registers to an event only once, if it has fired the bind will be removed
          * @param app = {
          *   eventName: string that is the name of the event that will be triggered like 'click'
-         *   aSync: boolean flag if this call back is called synchronously when the event fires, or after we queue all the listeners
+         *   aSync/async: boolean flag if this call back is called synchronously when the event fires, or after we queue all the listeners
          *   appName: string that specifies an added identifier for multiple instances of the same event name (click by button1, click by button 2)
          *   func: function - the callback function which the event data will be passed to
          *   context: the context which the event data will be run with
@@ -115,13 +115,15 @@
                 id: evId,
                 func: evData.func,
                 context: evData.context || null,
-                aSync: (typeof evData.aSync !== "undefined") ? !!evData.aSync : !!aSync,
+                sync:  (evData.aSync === true || evData.async === true) ? false :
+                            (evData.aSync === false || evData.async === false) ? true : sync,
                 appName: evData.appName,
                 triggerOnce: evData.triggerOnce || false
             };
+
             lstnrs[evData.eventName] = lstnrs[evData.eventName] || [];
             lstnrs[evData.eventName].push(newObj);
-            evUtil.log("Ev listen rgstr: evName=[" + evData.eventName + "] aSync=" + newObj.aSync + " appName=" + newObj.name, "DEBUG", "Events");
+            evUtil.log("Ev listen rgstr: evName=[" + evData.eventName + "] aSync=" + !newObj.sync + " appName=" + newObj.name, "DEBUG", "Events");
             evData = null;
             app = null;
             return evId;
@@ -205,25 +207,21 @@
             _storeEventData(triggerData);
 
             var callBacks = evUtil.getListeners(lstnrs, triggerData.eventName, triggerData.appName);
+
             if (callBacks.length > 0) {
                 for (var j = 0; j < callBacks.length; j++) {
                     var eventData = triggerData.passDataByRef ? triggerData.data : evUtil.cloneEventData(triggerData.data);//Clone the event data if there was not an explicit request to passByRef
-                    var eventInformation = {appName: triggerData.appName, eventName: triggerData.eventName};
-                    var callBack = callBacks[j];
-                    if (callBack.aSync || triggerData.aSync || (eventData && eventData.aSync)) {
-                        setTimeout(_createCallBack(callBack, eventData, eventInformation), 0);
-                    } else {
-                        _createCallBack(callBack, eventData, eventInformation)();
-                    }
+                    _createCallBack(callBacks[j], eventData, triggerData);
                 }
             }
+
             triggerData = null;
             return (callBacks.length > 0);
         }
 
         //------------------- Private methods ------------------------------//
 
-        function _getBindEventData(app, ev, fn){
+        function _getBindEventData(app, ev, fn) {
             var evData = app;
 
             if ("string" === typeof app) {
@@ -249,23 +247,37 @@
             return evData;
         }
 
-        function _createCallBack(callBack, callBackEventData, triggerInformation) {
-            return function () {
-                try {
-                    callBack.func.call(callBack.context, callBackEventData, triggerInformation);
-                    callBackEventData = null;//Delete local pointer
-                    if (callBack.triggerOnce) {
-                        unbind(callBack);
-                    }
-                    callBack = null;
-                } catch (err) {
-                    //noinspection JSUnresolvedVariable
-                    evUtil.log("Error executing " + triggerInformation.eventName + " eventId: " + callBack.id + "e=" + err.message, "ERROR", "Events");
-                    if (rethrow){
-                        throw err;
-                    }
+        function _createCallBack(callBack, callBackEventData, triggerData) {
+
+            var eventInformation = {appName: triggerData.appName, eventName: triggerData.eventName},
+                isAsync = ((!callBack.sync ||
+                (triggerData.aSync === true || triggerData.async === true)) &&
+                (triggerData.aSync !== false && triggerData.async !== false));
+
+            if (callBack.triggerOnce) { //clean once binding before running callback, in case callback fails
+                unbind(callBack);
+            }
+
+            if (isAsync) {
+                setTimeout(function () {
+                    _executeCallback.call(null, callBack, callBackEventData, eventInformation);
+                }, 0); //execute asynchronously (using _executeCallback.bind(...) fails in tests...)
+            }
+            else {
+                _executeCallback(callBack, callBackEventData, eventInformation);
+            }
+        }
+
+        function _executeCallback(callBack, callBackEventData, eventInformation) {
+            try {
+                callBack.func.call(callBack.context, callBackEventData, eventInformation);
+            } catch (err) {
+                //noinspection JSUnresolvedVariable
+                evUtil.log("Error executing " + eventInformation.eventName + " eventId: " + callBack.id + "e=" + err.message, "ERROR", "Events");
+                if (rethrow) {
+                    throw err;
                 }
-            };
+            }
         }
 
         /**
