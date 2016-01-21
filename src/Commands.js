@@ -37,15 +37,17 @@
             fired = [],
             prefix = "cmdId_",
             indexer = 0,
-            rethrow, //default true
+            rethrow,
             cloneData,
             eventBufferLimit,
-            defaultAppName;
+            defaultAppName,
+            throwOnNoListeners;
 
         defaultAppName = defaults && defaults.appName || "*";
         cloneData = (defaults && typeof defaults.cloneEventData === "boolean" ? defaults.cloneEventData : false);
         eventBufferLimit = (defaults && !isNaN(defaults.eventBufferLimit) ? defaults.eventBufferLimit : -1);
-        rethrow = (defaults &&  defaults.rethrow); //rethrow = (defaults && defaults.rethrow === false ? false : true);
+        rethrow = (defaults && defaults.rethrow);
+        throwOnNoListeners = (defaults && defaults.throwOnNoListeners);
 
         /**
          * This function allows registering for command with the following structure:
@@ -169,6 +171,10 @@
                     }
                 }
             }
+            else if (throwOnNoListeners === true){
+                throw new Error("Chronos.Commands - no listeners found for command: " + cmd.cmdName);
+            }
+
             return (callBacks.length > 0);
         }
 

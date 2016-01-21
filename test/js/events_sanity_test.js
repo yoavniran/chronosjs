@@ -284,6 +284,29 @@ describe("Events Sanity Tests", function () {
             expect(counter).to.equal(1);
 
         });
+
+        it("once registered on same event multiple times shouldnt interfere with others", function(){
+
+            var counter = 0;
+
+            events.once("app1", "ev-once-test", function(){
+                counter++;
+            });
+
+            events.once("app1", "ev-once-test", function(){
+                counter++;
+            });
+
+            events.trigger("app1", "ev-once-test");
+
+            events.once("app1", "ev-once-test", function(){
+                counter++;
+            });
+
+            events.trigger("app1", "ev-once-test");
+
+            expect(counter).to.equal(3);
+        })
     });
 
     describe("check once fails", function () {
